@@ -5,7 +5,11 @@ var clc = require('cli-color')
 // https://github.com/chalk/ansi-regex
 var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
 
-var _log = console.log
+var DEBUG = true
+
+function log () {
+  DEBUG && console.log.apply(this, arguments)
+}
 
 function stripAnsi (str) {
   return str.replace(ansiRegex, '')
@@ -27,7 +31,7 @@ function stripSnippets (str) {
     var match = reLineNumber.exec(head) // match against head of string
     if (match && match[0]) {
       line.possibleSnippet = true
-      // console.log('possibleSnippet found: ' + text)
+      // log('possibleSnippet found: ' + text)
     }
   })
 
@@ -47,7 +51,7 @@ function stripSnippets (str) {
   }
 
   // lines.forEach(function (line) {
-  //   if (line.detectedSnippet) console.log('detectedSnippet: ' + line.text)
+  //   if (line.detectedSnippet) log('detectedSnippet: ' + line.text)
   // })
 
   return lines.filter(function (line) {
@@ -104,23 +108,31 @@ function transformToRelativePaths (text, callback) {
   })
 
   urls.forEach(function (url) {
-    // console.log(url.match)
+    // log(url.match)
     // replace matches path with a transformed path.relative path
     // var relativePath = './' + path.relative(__dirname, url.absolutePath)
     var relativePath = './' + path.relative(process.cwd(), url.absolutePath)
     text = text.split(url.match).join( callback(relativePath) )
   })
 
-  // console.log(urls)
+  // log(urls)
 
   return text
 }
 
 function init (text, callback) {
+  log(' === wooster input === ')
+  text.split('\n').forEach(function (line) {
+    log('  ' + line)
+  })
+
+  log(' === wooster debug info === ')
+
   text = stripAnsi(text)
   text = stripSnippets(text)
-  // console.log( text )
+  // log( text )
 
+  var _lines = text.split('\n')
   _resolved = []
   _positions = []
   _lastMode = 'normal'
@@ -130,18 +142,36 @@ function init (text, callback) {
   var urls = []
   var rePath = /[\S]*\.[a-zA-Z]+/g
   while (match = rePath.exec(text)) {
-    urls.push(match[0])
+    var indexOf = text.indexOf(match[0])
+    var lineNumber = text.substring(0, indexOf).split('\n').length - 1
+    var line = _lines[lineNumber]
+    urls.push({
+      line: line,
+      likelyError: line.indexOf('Error') !== -1,
+      lineNumber: lineNumber,
+      match: match[0]
+    })
+
+    // urls.push(match[0])
   }
   urls = urls.map(function (url) {
     // resolve to absolute paths
-    return path.resolve(url)
+    return Object.assign({}, url, {
+      match: path.resolve(url.match)
+    })
   }).filter(function (url, index, arr) {
     // filter out duplicates
-    return arr.indexOf(url) === index
+    var i
+    for (i = 0; i < arr.length; i++) {
+      var u = arr[i]
+      if (u.match === url.match) return index === i
+    }
+    return true
+    // return arr.indexOf(url) === index
   }).filter(function (url) {
     // filter out non-files
     try {
-      return fs.existsSync(url)
+      return fs.existsSync(url.match)
       // fs.readFileSync(url, { encoding: 'utf8' })
       return true
     } catch (err) {
@@ -151,50 +181,67 @@ function init (text, callback) {
 
   if (!urls[0]) return
 
-  var lastUrl = urls[urls.length - 1]
-  urls.forEach(function (url) {
-    // console.log('resolved: ' + url)
-  })
-  console.log('lastUrl: ' + lastUrl)
+  var bestUrl = urls.sort(function (a, b) {
+    if (a.likelyError && !b.likelyError) return -1
+    if (!a.likelyError && b.likelyError) return 1
+    return 0
+  })[0].match
+  log('  source URL detected: ' + bestUrl)
 
   // var rePosition = /[(]?\s{0,5}\d+\s{0,5}?[:]\s{0,5}?\d+\s{0,5}[)]?/g
   var matches = []
-  var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D+\s{0,5}?\d+\s{0,5}[)]?/g
+  var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,20}\s{0,5}?\d+\s{0,5}[)]?/g
   // match = rePosition.exec(text)
   while (match = rePosition.exec(text)) {
-    matches.push(match[0])
+    var indexOf = text.indexOf(match[0])
+    var lineNumber = text.substring(0, indexOf).split('\n').length - 1
+    var line = _lines[lineNumber]
+    matches.push({
+      line: line,
+      likelyError: line.indexOf('Error') !== -1,
+      lineNumber: lineNumber,
+      match: match[0]
+    })
   }
 
   if (!matches.length > 0) return
 
-  var lastMatch = matches[matches.length - 1]
-  // console.log(match)
+  // log(' == ')
+  // log(matches.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
+  // log(' == ')
+  var bestMatch = matches.sort(function (a, b) {
+    if (a.likelyError && !b.likelyError) return -1
+    if (!a.likelyError && b.likelyError) return 1
+    return 0
+  })[0].match
   // if (!match || !match[0]) {
   //   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,10}\s{0,5}?\d+\s{0,5}[)]?/g
   //   match = rePosition.exec(text)
   // }
 
   _resolved.push({
-    url: lastUrl,
-    pos: parsePosition( lastMatch )
+    url: bestUrl,
+    pos: parsePosition( bestMatch )
   })
 
-  text.split('\n').forEach(function (line) {
-    var prettyLine = parseOutput(line)
-    if (prettyLine !== undefined) console.log(prettyLine)
-  })
+  // text.split('\n').forEach(function (line) {
+  //   var prettyLine = parseOutput(line)
+  //   if (prettyLine && prettyLine.trim()) log('  prettyLine: ' + prettyLine)
+  // })
 
   text.split('\n').forEach(function (line) {
     if (line.indexOf('Error') >= 0) _likelyErrorDescription = line
   })
 
+  log('  Most likely error description: ' + _likelyErrorDescription)
+
   trigger(callback)
 }
 
 function parsePosition (pos) {
-  console.log('pos: ' + pos)
+  log('  line positioning string detected: ' + pos)
   var split = pos.split(/\D+/).filter(function (s) { return s })
-  console.log(split)
+  log('  parsed positioning string: ' + split.toString())
   return {
     line: /\d+/.exec(split[0])[0],
     column: /\d+/.exec(split[1])[0]
@@ -219,14 +266,14 @@ function trigger (callback) {
       var lines = buffer.split('\n')
       var i = Math.max(0, pos.line - 5)
       var j = Math.min(lines.length - 1, i + 4 + 2)
-      // console.log('pos.line: ' + pos.line)
-      // console.log('i: ' + i)
-      // console.log('j: ' + j)
+      // log('pos.line: ' + pos.line)
+      // log('i: ' + i)
+      // log('j: ' + j)
 
       var minOffset = String(j).trim().length
 
-      console.log()
-      console.log(' >> snippet << ')
+      log()
+      log(' >> wooster output << ')
       if (_likelyErrorDescription.length > 0) {
         // shorten urls in error description
         // (path/to/file -> p/t/file)
@@ -249,18 +296,18 @@ function trigger (callback) {
             return word
           }
         })
-        console.log(
+        log(
           ' ' + clc.redBright(words.join(' '))
         )
       }
-      console.log()
-      console.log(
+      log()
+      log(
         ' @ ' +
         transformToRelativePaths(url, strToMagenta) +
         ' ' + clc.redBright(pos.line) +
         ':' + clc.redBright(pos.column)
       )
-      // console.log('---')
+      // log('---')
       var result = []
       for (; i < j; i++) {
         var lineNumber = String(i + 1).trim()
@@ -275,7 +322,7 @@ function trigger (callback) {
         lineNumber += ' | '
 
         result.push(lineNumber + lines[i])
-        // console.log(lines[i])
+        // log(lines[i])
 
         // draw an arrow pointing upward to column location
         if (i === pos.line - 1) {
@@ -284,24 +331,24 @@ function trigger (callback) {
             pointerOffset += ' '
           }
           var _o = String(j).trim().split(/./).join(' ') + '   | '
-          // console.log(pointerOffset + '^')
+          // log(pointerOffset + '^')
           result.push(_o + pointerOffset + '^')
         }
       }
 
       result.forEach(function (line) {
         var prettyLine = parsePrettyLine(line, url)
-        console.log(prettyLine)
+        log(prettyLine)
       })
 
-      // console.log('---')
+      // log('---')
     })
-    // console.log('_resolved: ' + _resolved.length)
+    // log('_resolved: ' + _resolved.length)
     var textContent = results.join('\n')
     if (typeof callback === 'function') {
       callback(textContent)
     } else {
-      _log(textContent)
+      console.log(textContent)
     }
   }, 5)
 }
@@ -1118,7 +1165,7 @@ function parsePrettyLine (line, url) {
   return line // do nothing
 }
 
-// console.log(__dirname)
+// log(__dirname)
 // init(browserifyString)
 // init(standardString)
 
