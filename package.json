@@ -1,15 +1,26 @@
 {
   "name": "wooster",
   "version": "0.0.0",
-  "description": "",
+  "description": "simple JavaScript error detection/parser/simplifier/highlighter",
   "main": "snippet.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "wooster"
+  ],
+  "author": "talmobi <talmo.christian@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/talmobi/wooster"
+  },
+  "bugs": {
+    "url": "https://github.com/talmobi/wooster/issues",
+    "email": "talmo.christian@gmail.com"
+  },
   "dependencies": {
     "cli-color": "^1.2.0"
-  }
+  },
+  "devDependencies": {}
 }
