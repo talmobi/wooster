@@ -76,12 +76,12 @@ var _positions = []
 var _lastMode = 'normal'
 var _likelyErrorDescription = ''
 
-function transformToRelativePaths (text, process) {
-  if (!process) {
-    process = function (str) { return str }
+function transformToRelativePaths (text, callback) {
+  if (!callback) {
+    callback = function (str) { return str }
   }
-  if (typeof process !== 'function') {
-    throw new Error('process parameter must be of type "function"')
+  if (typeof callback !== 'function') {
+    throw new Error('callback parameter must be of type "function"')
   }
 
   var match
@@ -106,8 +106,9 @@ function transformToRelativePaths (text, process) {
   urls.forEach(function (url) {
     // console.log(url.match)
     // replace matches path with a transformed path.relative path
-    var relativePath = './' + path.relative(__dirname, url.absolutePath)
-    text = text.split(url.match).join( process(relativePath) )
+    // var relativePath = './' + path.relative(__dirname, url.absolutePath)
+    var relativePath = './' + path.relative(process.cwd(), url.absolutePath)
+    text = text.split(url.match).join( callback(relativePath) )
   })
 
   // console.log(urls)
