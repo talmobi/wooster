@@ -182,10 +182,10 @@ function init (text, callback) {
   if (!urls[0]) return
 
   var bestUrl = urls.sort(function (a, b) {
-    if (a.likelyError && !b.likelyError) return -1
-    if (!a.likelyError && b.likelyError) return 1
+    if (a.likelyError && !b.likelyError) return 1
+    if (!a.likelyError && b.likelyError) return -1
     return 0
-  })[0].match
+  })[urls.length - 1].match
   log('  source URL detected: ' + bestUrl)
 
   // var rePosition = /[(]?\s{0,5}\d+\s{0,5}?[:]\s{0,5}?\d+\s{0,5}[)]?/g
@@ -196,8 +196,16 @@ function init (text, callback) {
     var indexOf = text.indexOf(match[0])
     var lineNumber = text.substring(0, indexOf).split('\n').length - 1
     var line = _lines[lineNumber]
+    var words = line.split(/\s+/)
+    // console.log(words)
+    // console.log(match[0])
+    var word = words.filter(function (w) {
+      return w.indexOf(match[0]) !== -1
+    })[0]
+    var isLikelyPath = !!(word && word.indexOf('/') !== -1)
     matches.push({
       line: line,
+      isLikelyPath: isLikelyPath,
       likelyError: line.indexOf('Error') !== -1,
       lineNumber: lineNumber,
       match: match[0]
@@ -210,10 +218,13 @@ function init (text, callback) {
   // log(matches.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
   // log(' == ')
   var bestMatch = matches.sort(function (a, b) {
-    if (a.likelyError && !b.likelyError) return -1
-    if (!a.likelyError && b.likelyError) return 1
+    if (a.likelyError && !b.likelyError) return 1
+    if (!a.likelyError && b.likelyError) return -1
     return 0
-  })[0].match
+  }).sort(function (a, b) {
+    if (a.isLikelyPath) return -1 // prefer position strings not likely to be part of a url
+    return 0
+  })[matches.length - 1].match
   // if (!match || !match[0]) {
   //   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,10}\s{0,5}?\d+\s{0,5}[)]?/g
   //   match = rePosition.exec(text)
