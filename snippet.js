@@ -142,18 +142,25 @@ function init (text, callback) {
   var urls = []
   var rePath = /[\S]*\.[a-zA-Z]+/g
   while (match = rePath.exec(text)) {
+    var weight = 0
     var indexOf = text.indexOf(match[0])
     var lineNumber = text.substring(0, indexOf).split('\n').length - 1
     var line = _lines[lineNumber]
+
+    if (line.toLowerCase().indexOf('node_modules') !== -1) weight--
+
+    if (line.toLowerCase().indexOf('error') !== -1) weight++
+    if (line.toLowerCase().indexOf('fail') !== -1) weight++
+    if (line.indexOf('Error') !== -1) weight++
+
     urls.push({
+      weight: weight,
       line: line,
-      likelyError: line.indexOf('Error') !== -1,
       lineNumber: lineNumber,
       match: match[0]
     })
-
-    // urls.push(match[0])
   }
+
   urls = urls.map(function (url) {
     // resolve to absolute paths
     return Object.assign({}, url, {
@@ -181,11 +188,15 @@ function init (text, callback) {
 
   if (!urls[0]) return
 
-  var bestUrl = urls.sort(function (a, b) {
-    if (a.likelyError && !b.likelyError) return 1
-    if (!a.likelyError && b.likelyError) return -1
-    return 0
-  })[urls.length - 1].match
+  urls = urls.sort(function (a, b) {
+    return b.weight - a.weight
+  })
+
+  log(' === urls === ')
+  log(urls)
+  log('')
+
+  var bestUrl = urls[0].match
   log('  source URL detected: ' + bestUrl)
 
   // var rePosition = /[(]?\s{0,5}\d+\s{0,5}?[:]\s{0,5}?\d+\s{0,5}[)]?/g
@@ -193,20 +204,31 @@ function init (text, callback) {
   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,20}\s{0,5}?\d+\s{0,5}[)]?/g
   // match = rePosition.exec(text)
   while (match = rePosition.exec(text)) {
+    var weight = 0
+
     var indexOf = text.indexOf(match[0])
     var lineNumber = text.substring(0, indexOf).split('\n').length - 1
     var line = _lines[lineNumber]
     var words = line.split(/\s+/)
-    // console.log(words)
-    // console.log(match[0])
+    console.log(words)
+    console.log(match[0])
     var word = words.filter(function (w) {
       return w.indexOf(match[0]) !== -1
     })[0]
-    var isLikelyPath = !!(word && word.indexOf('/') !== -1)
+
+    // console.log(' position word boundary: ' + word + ', match: ' + match[0])
+    if (word && word.indexOf('/') !== -1) weight--
+    if (line.toLowerCase().indexOf('node_modules') !== -1) weight--
+
+    if (line.toLowerCase().indexOf('error') !== -1) weight++
+    if (line.toLowerCase().indexOf('fail') !== -1) weight++
+    if (line.indexOf('Error') !== -1) weight++
+
+    if (line.indexOf(bestUrl) !== -1) weight++
+
     matches.push({
       line: line,
-      isLikelyPath: isLikelyPath,
-      likelyError: line.indexOf('Error') !== -1,
+      weight: weight,
       lineNumber: lineNumber,
       match: match[0]
     })
@@ -214,17 +236,13 @@ function init (text, callback) {
 
   if (!matches.length > 0) return
 
-  // log(' == ')
-  // log(matches.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
-  // log(' == ')
-  var bestMatch = matches.sort(function (a, b) {
-    if (a.likelyError && !b.likelyError) return 1
-    if (!a.likelyError && b.likelyError) return -1
-    return 0
-  }).sort(function (a, b) {
-    if (a.isLikelyPath) return -1 // prefer position strings not likely to be part of a url
-    return 0
-  })[matches.length - 1].match
+  var r = matches.sort(function (a, b) {
+    return b.weight - a.weight
+  })
+  log(' == ')
+  log(r.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
+  log(' == ')
+  var bestMatch = r[0].match
   // if (!match || !match[0]) {
   //   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,10}\s{0,5}?\d+\s{0,5}[)]?/g
   //   match = rePosition.exec(text)
@@ -250,7 +268,7 @@ function init (text, callback) {
 }
 
 function parsePosition (pos) {
-  log('  line positioning string detected: ' + pos)
+  // log('  line positioning string detected: ' + pos)
   var split = pos.split(/\D+/).filter(function (s) { return s })
   log('  parsed positioning string: ' + split.toString())
   return {
