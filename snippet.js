@@ -217,12 +217,29 @@ function init (text, callback) {
     })[0]
 
     // console.log(' position word boundary: ' + word + ', match: ' + match[0])
+    // if matched word boundary contains '/' (path seperators) decrease weight
+    // this avoids parsing path names as error positions (in case a path name happens to match)
     if (word && word.indexOf('/') !== -1) weight--
+
+    // avoid parsing lines with node_modules in them (most likely stack traces..)
     if (line.toLowerCase().indexOf('node_modules') !== -1) weight--
 
+    // if current line contains 'error' increase weight
     if (line.toLowerCase().indexOf('error') !== -1) weight++
     if (line.toLowerCase().indexOf('fail') !== -1) weight++
     if (line.indexOf('Error') !== -1) weight++
+
+    // if prev line contains 'error' increase weight a little bit
+    var prevLine = _lines[lineNumber - 1]
+    if (typeof prevLine === 'string') {
+      if (prevLine.toLowerCase().indexOf('error') !== -1) weight += 0.50
+    }
+
+    // if next line contains 'error' increase weight a tiny bit
+    var nextLine = _lines[lineNumber + 1]
+    if (typeof nextLine === 'string') {
+      if (nextLine.toLowerCase().indexOf('error') !== -1) weight += 0.25
+    }
 
     if (line.indexOf(bestUrl) !== -1) weight++
 
