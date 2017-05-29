@@ -197,7 +197,7 @@ function init (text, callback) {
   log('')
 
   var bestUrl = urls[0].match
-  log('  source URL detected: ' + bestUrl)
+  log('   > most likely source URL: ' + bestUrl)
 
   // var rePosition = /[(]?\s{0,5}\d+\s{0,5}?[:]\s{0,5}?\d+\s{0,5}[)]?/g
   var matches = []
@@ -210,8 +210,8 @@ function init (text, callback) {
     var lineNumber = text.substring(0, indexOf).split('\n').length - 1
     var line = _lines[lineNumber]
     var words = line.split(/\s+/)
-    console.log(words)
-    console.log(match[0])
+    // console.log(words)
+    // console.log(match[0])
     var word = words.filter(function (w) {
       return w.indexOf(match[0]) !== -1
     })[0]
@@ -256,9 +256,9 @@ function init (text, callback) {
   var r = matches.sort(function (a, b) {
     return b.weight - a.weight
   })
-  log(' == ')
+  log(' === positions === ')
   log(r.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
-  log(' == ')
+  log('')
   var bestMatch = r[0].match
   // if (!match || !match[0]) {
   //   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,10}\s{0,5}?\d+\s{0,5}[)]?/g
@@ -279,7 +279,7 @@ function init (text, callback) {
     if (line.indexOf('Error') >= 0) _likelyErrorDescription = line
   })
 
-  log('  Most likely error description: ' + _likelyErrorDescription)
+  log('   > most likely error description: ' + _likelyErrorDescription)
 
   trigger(callback)
 }
