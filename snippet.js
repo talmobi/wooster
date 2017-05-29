@@ -1185,6 +1185,7 @@ function parsePrettyLine (line, url) {
     var right
     if (testToken(suffix, [
       'less/i',
+      'styl/i',
       'sass/i',
       'scss/i',
       'css/i'
