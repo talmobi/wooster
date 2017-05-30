@@ -198,67 +198,49 @@ function init (text, callback) {
 
     // for convenience check up two dir levels
     urls.push({
-      weight: weight - 0.2,
+      weight: weight - 0.15,
       line: line,
       lineNumber: lineNumber,
       match: '../../' + match[0]
     })
 
     // for convenience check down one dir level
-  }
-
-  urls = urls.filter(function (url) {
-    return url.weight >= 0
-  }).map(function (url) {
-    // resolve to absolute paths
-    debug(' resolved url: ' + path.resolve(url.match))
-    return Object.assign({}, url, {
-      // match: path.resolve(url.match)
-      match: path.resolve(url.match)
+    cwdDirs.forEach(function (dir) {
+      urls.push({
+        weight: weight - 0.20,
+        line: line,
+        lineNumber: lineNumber,
+        match: dir + '/' + match[0]
+      })
     })
-  }).filter(function (url, index, arr) {
-    // filter out duplicates
-    return true
-    var i
-    for (i = 0; i < arr.length; i++) {
-      var u = arr[i]
-      if (u.match === url.match) return index === i
-    }
-    return true
-    // return arr.indexOf(url) === index
-  }).filter(function (url) {
-    // filter out non-files
-    try {
-      var b = fs.existsSync(url.match)
-      if (b) debug('keeping existing url')
-      if (!b) debug('filtering out non-existing url')
-      return b
-
-      // fs.readFileSync(url, { encoding: 'utf8' })
-      return true
-    } catch (err) {
-      debug('filtering out non-existing url')
-      return false
-    }
-  })
-
-  debug(urls)
-
-  // if (!urls[0]) return console.log('no errors detected')
-  if (!urls[0]) {
-    debug('no url matches')
-    return process.stdout.write(_rawInputText)
   }
 
+  debug('sorting urls by weight')
   urls = urls.sort(function (a, b) {
     return b.weight - a.weight
   })
 
-  debug(urls)
-  debug('')
-
-  var bestUrl = urls[0].match
+  var bestUrl
+  for (var i = 0; i < urls.length; i++) {
+    var url = urls[i]
+    var resolvedPath = path.resolve(url.match)
+    var exists = fs.existsSync(resolvedPath)
+    if (exists) {
+      bestUrl = resolvedPath
+      debug(' >> deciding line: ' + url.line)
+      break
+    }
+  }
   debug('   > most likely source URL: ' + bestUrl)
+
+
+  // if (!urls[0]) return console.log('no errors detected')
+  if (!bestUrl) {
+    debug('no url matches')
+    return process.stdout.write(_rawInputText)
+  }
+
+  debug('')
 
   // var rePosition = /[(]?\s{0,5}\d+\s{0,5}?[:]\s{0,5}?\d+\s{0,5}[)]?/g
   debug(' === positions === ')
