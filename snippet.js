@@ -131,7 +131,10 @@ function init (text, callback) {
   var _rawInputText = text
   text = stripAnsi(text)
   text = stripSnippets(text)
-  // debug( text )
+
+  debug(' === wooster input after strips === ')
+  debug( text )
+  debug(' ===')
 
   var _lines = text.split('\n')
   _resolved = []
@@ -139,20 +142,44 @@ function init (text, callback) {
   _lastMode = 'normal'
   _likelyErrorDescription = ''
 
+  debug(' === urls === ')
   var match
   var urls = []
   var rePath = /[\S]*\.[a-zA-Z]+/g
+  var seekBuffer = text
+
+  var cwdDirs = fs.readdirSync(process.cwd()).filter(function (path) { return fs.lstatSync(path).isDirectory() })
+  debug(' === cwd directories === ')
+  debug(cwdDirs)
+  debug(' === ')
+
   while (match = rePath.exec(text)) {
     var weight = 0
-    var indexOf = text.indexOf(match[0])
+    var indexOf = (text.length - seekBuffer.length) + seekBuffer.indexOf(match[0])
     var lineNumber = text.substring(0, indexOf).split('\n').length - 1
     var line = _lines[lineNumber]
+    seekBuffer = text.substring(indexOf + match[0].length)
 
     if (line.toLowerCase().indexOf('node_modules') !== -1) weight--
 
-    if (line.toLowerCase().indexOf('error') !== -1) weight++
-    if (line.toLowerCase().indexOf('fail') !== -1) weight++
-    if (line.indexOf('Error') !== -1) weight++
+    if (line.toLowerCase().indexOf('error') !== -1) weight += 1
+    if (line.toLowerCase().indexOf('fail') !== -1) weight += 0.49
+    if (line.indexOf('Error') !== -1) weight += 1.1
+
+    // if prev line contains 'error' increase weight a little bit
+    var prevLine = _lines[lineNumber - 1]
+    if (typeof prevLine === 'string') {
+      if (prevLine.toLowerCase().indexOf('error') !== -1) weight += 0.50
+    }
+
+    // if next line contains 'error' increase weight a tiny bit
+    var nextLine = _lines[lineNumber + 1]
+    if (typeof nextLine === 'string') {
+      if (nextLine.toLowerCase().indexOf('error') !== -1) weight += 0.25
+    }
+
+    debug(' url found: ' + match[0] + ', weight: ' + weight)
+    debug('  line: ' + line)
 
     urls.push({
       weight: weight,
@@ -160,15 +187,38 @@ function init (text, callback) {
       lineNumber: lineNumber,
       match: match[0]
     })
+
+    // for convenience check up one dir level
+    urls.push({
+      weight: weight - 0.1,
+      line: line,
+      lineNumber: lineNumber,
+      match: '../' + match[0]
+    })
+
+    // for convenience check up two dir levels
+    urls.push({
+      weight: weight - 0.2,
+      line: line,
+      lineNumber: lineNumber,
+      match: '../../' + match[0]
+    })
+
+    // for convenience check down one dir level
   }
 
-  urls = urls.map(function (url) {
+  urls = urls.filter(function (url) {
+    return url.weight >= 0
+  }).map(function (url) {
     // resolve to absolute paths
+    debug(' resolved url: ' + path.resolve(url.match))
     return Object.assign({}, url, {
+      // match: path.resolve(url.match)
       match: path.resolve(url.match)
     })
   }).filter(function (url, index, arr) {
     // filter out duplicates
+    return true
     var i
     for (i = 0; i < arr.length; i++) {
       var u = arr[i]
@@ -179,22 +229,31 @@ function init (text, callback) {
   }).filter(function (url) {
     // filter out non-files
     try {
-      return fs.existsSync(url.match)
+      var b = fs.existsSync(url.match)
+      if (b) debug('keeping existing url')
+      if (!b) debug('filtering out non-existing url')
+      return b
+
       // fs.readFileSync(url, { encoding: 'utf8' })
       return true
     } catch (err) {
+      debug('filtering out non-existing url')
       return false
     }
   })
 
+  debug(urls)
+
   // if (!urls[0]) return console.log('no errors detected')
-  if (!urls[0]) return process.stdout.write(_rawInputText)
+  if (!urls[0]) {
+    debug('no url matches')
+    return process.stdout.write(_rawInputText)
+  }
 
   urls = urls.sort(function (a, b) {
     return b.weight - a.weight
   })
 
-  debug(' === urls === ')
   debug(urls)
   debug('')
 
@@ -202,13 +261,15 @@ function init (text, callback) {
   debug('   > most likely source URL: ' + bestUrl)
 
   // var rePosition = /[(]?\s{0,5}\d+\s{0,5}?[:]\s{0,5}?\d+\s{0,5}[)]?/g
+  debug(' === positions === ')
   var matches = []
   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,20}\s{0,5}?\d+\s{0,5}[)]?/g
   // match = rePosition.exec(text)
+  seekBuffer = text
   while (match = rePosition.exec(text)) {
     var weight = 0
 
-    var indexOf = text.indexOf(match[0])
+    var indexOf = (text.length - seekBuffer.length) + seekBuffer.indexOf(match[0])
     var lineNumber = text.substring(0, indexOf).split('\n').length - 1
     var line = _lines[lineNumber]
     var words = line.split(/\s+/)
@@ -217,6 +278,7 @@ function init (text, callback) {
     var word = words.filter(function (w) {
       return w.indexOf(match[0]) !== -1
     })[0]
+    seekBuffer = text.substring(indexOf + match[0].length)
 
     // console.debug(' position word boundary: ' + word + ', match: ' + match[0])
     // if matched word boundary contains '/' (path seperators) decrease weight
@@ -245,6 +307,9 @@ function init (text, callback) {
 
     if (line.indexOf(bestUrl) !== -1) weight++
 
+    debug(' position found: ' + match[0] + ', weight: ' + weight)
+    debug('  line: ' + line)
+
     matches.push({
       line: line,
       weight: weight,
@@ -254,13 +319,14 @@ function init (text, callback) {
   }
 
   // if (!matches.length > 0) return console.log('no errors detected')
-  if (!matches.length > 0) return process.stdout.write(_rawInputText)
+  if (!matches.length > 0) {
+    debug('no positional matches')
+    return process.stdout.write(_rawInputText)
+  }
 
   var r = matches.sort(function (a, b) {
     return b.weight - a.weight
   })
-  debug(' === positions === ')
-  debug(r.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
   debug('')
   var bestMatch = r[0].match
   // if (!match || !match[0]) {
