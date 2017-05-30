@@ -5,9 +5,9 @@ var clc = require('cli-color')
 // https://github.com/chalk/ansi-regex
 var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
 
-var DEBUG = true
+var DEBUG = false
 
-function log () {
+function debug () {
   DEBUG && console.log.apply(this, arguments)
 }
 
@@ -31,7 +31,7 @@ function stripSnippets (str) {
     var match = reLineNumber.exec(head) // match against head of string
     if (match && match[0]) {
       line.possibleSnippet = true
-      // log('possibleSnippet found: ' + text)
+      // debug('possibleSnippet found: ' + text)
     }
   })
 
@@ -51,7 +51,7 @@ function stripSnippets (str) {
   }
 
   // lines.forEach(function (line) {
-  //   if (line.detectedSnippet) log('detectedSnippet: ' + line.text)
+  //   if (line.detectedSnippet) debug('detectedSnippet: ' + line.text)
   // })
 
   return lines.filter(function (line) {
@@ -108,29 +108,30 @@ function transformToRelativePaths (text, callback) {
   })
 
   urls.forEach(function (url) {
-    // log(url.match)
+    // debug(url.match)
     // replace matches path with a transformed path.relative path
     // var relativePath = './' + path.relative(__dirname, url.absolutePath)
     var relativePath = './' + path.relative(process.cwd(), url.absolutePath)
     text = text.split(url.match).join( callback(relativePath) )
   })
 
-  // log(urls)
+  // debug(urls)
 
   return text
 }
 
 function init (text, callback) {
-  log(' === wooster input === ')
+  debug(' === wooster input === ')
   text.split('\n').forEach(function (line) {
-    log('  ' + line)
+    debug('  ' + line)
   })
 
-  log(' === wooster debug info === ')
+  debug(' === wooster debug info === ')
 
+  var _rawInputText = text
   text = stripAnsi(text)
   text = stripSnippets(text)
-  // log( text )
+  // debug( text )
 
   var _lines = text.split('\n')
   _resolved = []
@@ -186,18 +187,19 @@ function init (text, callback) {
     }
   })
 
-  if (!urls[0]) return
+  // if (!urls[0]) return console.log('no errors detected')
+  if (!urls[0]) return process.stdout.write(_rawInputText)
 
   urls = urls.sort(function (a, b) {
     return b.weight - a.weight
   })
 
-  log(' === urls === ')
-  log(urls)
-  log('')
+  debug(' === urls === ')
+  debug(urls)
+  debug('')
 
   var bestUrl = urls[0].match
-  log('   > most likely source URL: ' + bestUrl)
+  debug('   > most likely source URL: ' + bestUrl)
 
   // var rePosition = /[(]?\s{0,5}\d+\s{0,5}?[:]\s{0,5}?\d+\s{0,5}[)]?/g
   var matches = []
@@ -210,13 +212,13 @@ function init (text, callback) {
     var lineNumber = text.substring(0, indexOf).split('\n').length - 1
     var line = _lines[lineNumber]
     var words = line.split(/\s+/)
-    // console.log(words)
-    // console.log(match[0])
+    // console.debug(words)
+    // console.debug(match[0])
     var word = words.filter(function (w) {
       return w.indexOf(match[0]) !== -1
     })[0]
 
-    // console.log(' position word boundary: ' + word + ', match: ' + match[0])
+    // console.debug(' position word boundary: ' + word + ', match: ' + match[0])
     // if matched word boundary contains '/' (path seperators) decrease weight
     // this avoids parsing path names as error positions (in case a path name happens to match)
     if (word && word.indexOf('/') !== -1) weight--
@@ -251,14 +253,15 @@ function init (text, callback) {
     })
   }
 
-  if (!matches.length > 0) return
+  // if (!matches.length > 0) return console.log('no errors detected')
+  if (!matches.length > 0) return process.stdout.write(_rawInputText)
 
   var r = matches.sort(function (a, b) {
     return b.weight - a.weight
   })
-  log(' === positions === ')
-  log(r.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
-  log('')
+  debug(' === positions === ')
+  debug(r.map(function (o) { return o.match + ' -- ' + o.line }).join('\n, '))
+  debug('')
   var bestMatch = r[0].match
   // if (!match || !match[0]) {
   //   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,10}\s{0,5}?\d+\s{0,5}[)]?/g
@@ -272,22 +275,24 @@ function init (text, callback) {
 
   // text.split('\n').forEach(function (line) {
   //   var prettyLine = parseOutput(line)
-  //   if (prettyLine && prettyLine.trim()) log('  prettyLine: ' + prettyLine)
+  //   if (prettyLine && prettyLine.trim()) debug('  prettyLine: ' + prettyLine)
   // })
 
   text.split('\n').forEach(function (line) {
     if (line.indexOf('Error') >= 0) _likelyErrorDescription = line
   })
 
-  log('   > most likely error description: ' + _likelyErrorDescription)
+  debug('   > most likely error description: ' + _likelyErrorDescription)
 
   trigger(callback)
+
+  // console.log(' ==== GIRAFFE END ==== ')
 }
 
 function parsePosition (pos) {
   // log('  line positioning string detected: ' + pos)
   var split = pos.split(/\D+/).filter(function (s) { return s })
-  log('  parsed positioning string: ' + split.toString())
+  debug('  parsed positioning string: ' + split.toString())
   return {
     line: /\d+/.exec(split[0])[0],
     column: /\d+/.exec(split[1])[0]
@@ -298,12 +303,10 @@ var _timeout
 function trigger (callback) {
   clearTimeout(_timeout)
   _timeout = setTimeout(function () {
-    var results = []
+    var output = []
 
-    var console = {
-      log: function (str) {
-        results.push(str)
-      }
+    var log = function (str) {
+      output.push(str)
     }
 
     _resolved.forEach(function (r) {
@@ -390,7 +393,7 @@ function trigger (callback) {
       // log('---')
     })
     // log('_resolved: ' + _resolved.length)
-    var textContent = results.join('\n')
+    var textContent = output.join('\n')
     if (typeof callback === 'function') {
       callback(textContent)
     } else {
@@ -464,6 +467,9 @@ function prettifyCodeLine (line, initialMode) {
 
           case '{':
           case '}':
+            // TODO unsure to include braces?
+          case '<':
+          case '>':
             // TODO unsure to include braces?
 
           case '+':
@@ -596,7 +602,7 @@ function parseToken (token, penColor) {
     'encodeURI',
     'encodeURIComponent',
     'document'
-  ])) {
+  ], 'ts')) {
     return clc.cyan(token)
   }
 
@@ -634,7 +640,7 @@ function parseToken (token, penColor) {
     'from',
     'arguments',
     'window'
-  ])) {
+  ], 'ts')) {
     return clc.redBright(token)
   }
 
@@ -643,7 +649,7 @@ function parseToken (token, penColor) {
     'false',
     'null',
     'undefined'
-  ])) {
+  ], 'ts')) {
     return clc.magentaBright(token)
   }
 
@@ -657,7 +663,7 @@ function parseToken (token, penColor) {
     'RegExp',
     'Array',
     'Boolean'
-  ])) {
+  ], 'ts')) {
     return clc['yellow'](token)
   }
 
