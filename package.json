@@ -7,6 +7,14 @@
     "wooster": "./cli.js"
   },
   "scripts": {
+    "build:webpack": "cd test && webpack main.js webpack.bundle.js",
+    "build:rollup": "cd test && rollup main.js --format cjs -o rollup.bundle.js",
+    "build:browserify": "cd test && browserify main.js -o browserify.bundle.js",
+    "e:build:webpack": "cd test && webpack main-syntax-error.js webpack.bundle.js",
+    "e:build:rollup": "cd test && rollup main-syntax-error.js --format cjs -o rollup.bundle.js",
+    "e:build:browserify": "cd test && browserify main-syntax-error.js -o browserify.bundle.js",
+    "build": "npm run build:webpack && npm run build:rollup && npm run build:browserify",
+    "e:build": "npm run e:build:webpack && npm run e:build:rollup && npm run e:build:browserify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -23,7 +31,15 @@
     "email": "talmo.christian@gmail.com"
   },
   "dependencies": {
-    "cli-color": "^1.2.0"
+    "cli-color": "^1.2.0",
+    "minimist": "^1.2.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^7.3.0",
+    "browserify": "^14.4.0",
+    "bubleify": "^0.7.0",
+    "rollup": "^0.41.6",
+    "webpack": "^2.6.1"
+  }
 }

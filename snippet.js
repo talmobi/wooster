@@ -121,14 +121,21 @@ function transformToRelativePaths (text, callback) {
 }
 
 function init (text, callback) {
+  var _rawInputText = text
+  if (text.indexOf('error') === -1 && text.indexOf('Error') === -1) return process.stdout.write(_rawInputText)
+
   debug(' === wooster input === ')
   text.split('\n').forEach(function (line) {
     debug('  ' + line)
   })
 
+  text = text.split('\n').filter(function (line) {
+    var i = line.toLowerCase().trim().indexOf('npm')
+    return !(i >= 0 && i <= 5)
+  }).join('\n')
+
   debug(' === wooster debug info === ')
 
-  var _rawInputText = text
   text = stripAnsi(text)
   text = stripSnippets(text)
 
@@ -161,6 +168,7 @@ function init (text, callback) {
     seekBuffer = text.substring(indexOf + match[0].length)
 
     if (line.toLowerCase().indexOf('node_modules') !== -1) weight--
+    if (line.toLowerCase().indexOf('npm') !== -1) weight -= 0.5
 
     if (line.toLowerCase().indexOf('error') !== -1) weight += 1
     if (line.toLowerCase().indexOf('fail') !== -1) weight += 0.49
@@ -269,6 +277,7 @@ function init (text, callback) {
 
     // avoid parsing lines with node_modules in them (most likely stack traces..)
     if (line.toLowerCase().indexOf('node_modules') !== -1) weight--
+    if (line.toLowerCase().indexOf('npm') !== -1) weight -= 0.5
 
     // if current line contains 'error' increase weight
     if (line.toLowerCase().indexOf('error') !== -1) weight++
@@ -326,9 +335,16 @@ function init (text, callback) {
   //   if (prettyLine && prettyLine.trim()) debug('  prettyLine: ' + prettyLine)
   // })
 
-  text.split('\n').forEach(function (line) {
+  _lines.forEach(function (line) {
     if (line.indexOf('Error') >= 0) _likelyErrorDescription = line
   })
+
+  if (!_likelyErrorDescription) {
+    _lines.forEach(function (line) {
+      if (line.toLowerCase().indexOf('unexpected') >= 0) _likelyErrorDescription = line
+      if (line.toLowerCase().indexOf('failed') >= 0) _likelyErrorDescription = line
+    })
+  }
 
   debug('   > most likely error description: ' + _likelyErrorDescription)
 
