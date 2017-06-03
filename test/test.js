@@ -24,7 +24,9 @@ function exec (cmd, args, callback) {
 
 function createIOHandler (callback) {
   var _buffer = ''
-  var _timeout
+  var _timeout = setTimeout(function () {
+    callback(_buffer)
+  }, 1000)
 
   return function handleIO (chunk) {
     _buffer += chunk.toString('utf8')
@@ -48,6 +50,65 @@ function normalize (str) {
   return s
 }
 
+test('test successful browserify cli', function (t) {
+  t.plan(4)
+
+  exec('npm', 'run build:browserify --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') === -1,
+      'no errors on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+      t.equal(
+        buffer,
+        text,
+        'wooster output === input since no errors were detected'
+      )
+
+      // run the bundled javascript
+      exec('node', ['browserify.bundle.js'], function (buffer) {
+        t.equal(buffer.trim(), 'giraffe', 'expected output')
+
+        // on successful build, do nothing and print raw input as output
+        wooster(buffer, function (text) {
+          t.equal(buffer, text)
+        })
+      })
+    })
+  })
+})
+
+test('test error browserify cli', function (t) {
+  t.plan(2)
+
+  exec('npm', 'run e:build:browserify --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') !== -1,
+      'errors found on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+
+      var expectedOutput = [
+        '>> wooster output <<',
+        'ParseError: Unexpected token',
+        '',
+        '@ ./main-syntax-error.js 1:20',
+        '> 1 | var text = \'giraffe\':',
+        '|                     ^',
+        '2 | console.log(text)'
+      ].join('\n')
+
+      t.equal(
+        normalize(text),
+        normalize(expectedOutput),
+        'wooster output was as expected'
+      )
+    })
+  })
+})
+
 test('test successful webpack cli', function (t) {
   t.plan(4)
 
@@ -57,7 +118,7 @@ test('test successful webpack cli', function (t) {
       'no errors on the terminal as expected'
     )
 
-    var output = wooster(buffer, function (text) {
+    wooster(buffer, function (text) {
       t.equal(
         buffer,
         text,
@@ -86,7 +147,7 @@ test('test error webpack cli', function (t) {
       'errors found on the terminal as expected'
     )
 
-    var output = wooster(buffer, function (text) {
+    wooster(buffer, function (text) {
 
       var expectedOutput = [
         '',
@@ -100,8 +161,8 @@ test('test error webpack cli', function (t) {
       ].join('\n')
 
       t.equal(
-        normalize(expectedOutput),
         normalize(text),
+        normalize(expectedOutput),
         'wooster output was as expected'
       )
 
@@ -115,6 +176,7 @@ test('test error webpack cli', function (t) {
     })
   })
 })
+
 
 // test('test successful webpack', function (t) {
 //   t.plan(5)

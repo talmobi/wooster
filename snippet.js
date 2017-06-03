@@ -155,16 +155,16 @@ function init (text, callback) {
   _lastMode = 'normal'
   _likelyErrorDescription = ''
 
+  var cwdDirs = fs.readdirSync(process.cwd()).filter(function (path) { return fs.lstatSync(path).isDirectory() })
+  debug(' === cwd directories === ')
+  debug(cwdDirs)
+  debug(' === ')
+
   debug(' === urls === ')
   var match
   var urls = []
   var rePath = /[\S]*\.[a-zA-Z]+/g
   var seekBuffer = text
-
-  var cwdDirs = fs.readdirSync(process.cwd()).filter(function (path) { return fs.lstatSync(path).isDirectory() })
-  debug(' === cwd directories === ')
-  debug(cwdDirs)
-  debug(' === ')
 
   while (match = rePath.exec(text)) {
     var weight = 0
@@ -235,12 +235,14 @@ function init (text, callback) {
   })
 
   var bestUrl
+  var _bestUrl
   for (var i = 0; i < urls.length; i++) {
     var url = urls[i]
     var resolvedPath = path.resolve(url.match)
     var exists = fs.existsSync(resolvedPath)
     if (exists) {
       bestUrl = resolvedPath
+      _bestUrl = url
       debug(' >> deciding line: ' + url.line)
       break
     }
@@ -321,7 +323,32 @@ function init (text, callback) {
 
   // if (!matches.length > 0) return console.log('no errors detected')
   if (!matches.length > 0) {
-    debug('no positional matches')
+    debug('no positional matches, trying special cases')
+
+    // special case positional matching
+    // (for vanilla browserify prints only url and line number,
+    // and a context snippet with column indicated by a ^ marker)
+
+    if (_bestUrl) {
+      var line = _lines.slice( _bestUrl.lineNumber - 1).filter(function (l) {
+        return l.indexOf('^') >= 0
+      })[0]
+      var lineNumber = _bestUrl.line.split(':')[1].replace(/\D/g, '')
+      var column = line.indexOf('^')
+
+      matches.push({
+        line: line,
+        weight: 999,
+        lineNumber: lineNumber,
+        match: '(' + lineNumber + ':' + column + ')'
+      })
+
+      debug('special case positioning found: ' + matches[0].match)
+    }
+  }
+
+  if (!matches.length > 0) {
+    debug('still no positional matches, even after checking special cases')
     if (typeof callback === 'function') {
       return callback(_rawInputText)
     } else {
