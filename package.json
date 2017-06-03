@@ -13,9 +13,13 @@
     "e:build:webpack": "cd test && webpack main-syntax-error.js webpack.bundle.js",
     "e:build:rollup": "cd test && rollup main-syntax-error.js --format cjs -o rollup.bundle.js",
     "e:build:browserify": "cd test && browserify main-syntax-error.js -o browserify.bundle.js",
+    "build:less": "cd test && lessc style.less less.bundle.css",
+    "build:stylus": "cd test && stylus style.styl -o stylus.bundle.css",
+    "e:build:less": "cd test && lessc style-error.less less.bundle.css",
+    "e:build:stylus": "cd test && stylus style-error.styl -o stylus.bundle.css",
     "build": "npm run build:webpack && npm run build:rollup && npm run build:browserify",
     "e:build": "npm run e:build:webpack && npm run e:build:rollup && npm run e:build:browserify",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd test && node test.js | tap-spec"
   },
   "keywords": [
     "wooster"
@@ -39,7 +43,11 @@
     "babelify": "^7.3.0",
     "browserify": "^14.4.0",
     "bubleify": "^0.7.0",
+    "less": "^2.7.2",
     "rollup": "^0.41.6",
+    "stylus": "^0.54.5",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.3",
     "webpack": "^2.6.1"
   }
 }

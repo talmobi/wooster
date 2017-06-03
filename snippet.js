@@ -122,7 +122,13 @@ function transformToRelativePaths (text, callback) {
 
 function init (text, callback) {
   var _rawInputText = text
-  if (text.indexOf('error') === -1 && text.indexOf('Error') === -1) return process.stdout.write(_rawInputText)
+  if (text.indexOf('error') === -1 && text.indexOf('Error') === -1) {
+    if (typeof callback === 'function') {
+      return callback(_rawInputText)
+    } else {
+      return process.stdout.write(_rawInputText)
+    }
+  }
 
   debug(' === wooster input === ')
   text.split('\n').forEach(function (line) {
@@ -245,7 +251,11 @@ function init (text, callback) {
   // if (!urls[0]) return console.log('no errors detected')
   if (!bestUrl) {
     debug('no url matches')
-    return process.stdout.write(_rawInputText)
+    if (typeof callback === 'function') {
+      return callback(_rawInputText)
+    } else {
+      return process.stdout.write(_rawInputText)
+    }
   }
 
   debug('')
@@ -312,7 +322,11 @@ function init (text, callback) {
   // if (!matches.length > 0) return console.log('no errors detected')
   if (!matches.length > 0) {
     debug('no positional matches')
-    return process.stdout.write(_rawInputText)
+    if (typeof callback === 'function') {
+      return callback(_rawInputText)
+    } else {
+      return process.stdout.write(_rawInputText)
+    }
   }
 
   var r = matches.sort(function (a, b) {
