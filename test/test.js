@@ -9,26 +9,41 @@ var rollup = require('rollup')
 
 var test = require('tape')
 
+var _spawns = []
+
+process.on('exit', function () {
+  _spawns.forEach(function (spawn) {
+    try {
+      spawn.kill()
+    } catch (err) {}
+  })
+})
+
 function exec (cmd, args, callback) {
   var spawn = childProcess.spawn(cmd, args)
+  _spawns.push(spawn)
 
-  var handler = createIOHandler(callback)
+  var handler = createIOHandler(function (data) {
+    // console.log('killing spawn and calling callback')
+    spawn.kill()
+    callback(data)
+  })
 
   spawn.stdout.on('data', handler)
   spawn.stderr.on('data', handler)
-
-  process.on('exit', function () {
-    spawn.close()
-  })
 }
 
 function createIOHandler (callback) {
+  var _done = false
   var _buffer = ''
   var _timeout = setTimeout(function () {
+    _done = true
     callback(_buffer)
-  }, 1000)
+  }, 3000)
 
   return function handleIO (chunk) {
+    // console.log('callbacking')
+    if (_done) return undefined
     _buffer += chunk.toString('utf8')
     clearTimeout(_timeout)
     _timeout = setTimeout(function () {
@@ -50,6 +65,178 @@ function normalize (str) {
   return s
 }
 
+test('test successful stylus cli', function (t) {
+  t.plan(3)
+
+  exec('npm', 'run build:stylus --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') === -1,
+      'no errors on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+      t.equal(
+        buffer,
+        text,
+        'wooster output === input since no errors were detected'
+      )
+
+      // run the bundled javascript
+      exec('../node_modules/.bin/csslint', ['bundles/stylus.bundle.css'], function (buffer) {
+        t.ok(
+          buffer.toLowerCase().indexOf('no errors in') > 0,
+          'no errors found in the built css bundle as expected')
+      })
+    })
+  })
+})
+
+test('test error stylus cli', function (t) {
+  t.plan(2)
+
+  exec('npm', 'run e:build:stylus --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') !== -1,
+      'errors found on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+
+      var expectedOutput = [
+        '>> wooster output <<',
+        'TypeError: ./style-error.styl:2:21',
+        '',
+        '@ ./style-error.styl 2:21',
+        '1 | html, body',
+        '> 2 |   background: salmon%',
+        '|                      ^'
+      ].join('\n')
+
+      t.equal(
+        normalize(text),
+        normalize(expectedOutput),
+        'wooster output was as expected'
+      )
+    })
+  })
+})
+
+test('test successful less cli', function (t) {
+  t.plan(3)
+
+  exec('npm', 'run build:rollup --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') === -1,
+      'no errors on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+      t.equal(
+        buffer,
+        text,
+        'wooster output === input since no errors were detected'
+      )
+
+      // run the bundled javascript
+      exec('../node_modules/.bin/csslint', ['bundles/less.bundle.css'], function (buffer) {
+        t.ok(
+          buffer.toLowerCase().indexOf('no errors in') > 0,
+          'no errors found in the built css bundle as expected')
+      })
+    })
+  })
+})
+
+test('test error less cli', function (t) {
+  t.plan(2)
+
+  exec('npm', 'run e:build:less --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') !== -1,
+      'errors found on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+
+      var expectedOutput = [
+        '>> wooster output <<',
+        'SyntaxError: Invalid % without number in ./style-error.less on line 2, column 3:',
+        '',
+        '@ ./style-error.less 2:3',
+        '1 | html, body {',
+        '> 2 |   background: salmon%',
+        '|    ^',
+        '3 | }'
+      ].join('\n')
+
+      t.equal(
+        normalize(text),
+        normalize(expectedOutput),
+        'wooster output was as expected'
+      )
+    })
+  })
+})
+
+test('test successful rollup cli', function (t) {
+  t.plan(4)
+
+  exec('npm', 'run build:rollup --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') === -1,
+      'no errors on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+      t.equal(
+        buffer,
+        text,
+        'wooster output === input since no errors were detected'
+      )
+
+      // run the bundled javascript
+      exec('node', ['bundles/rollup.bundle.js'], function (buffer) {
+        t.equal(buffer.trim(), 'giraffe', 'expected output')
+
+        // on successful build, do nothing and print raw input as output
+        wooster(buffer, function (text) {
+          t.equal(buffer, text)
+        })
+      })
+    })
+  })
+})
+
+test('test error rollup cli', function (t) {
+  t.plan(2)
+
+  exec('npm', 'run e:build:rollup --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') !== -1,
+      'errors found on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+
+      var expectedOutput = [
+        '>> wooster output <<',
+        'Error: Unexpected token',
+        '',
+        '@ ./main-error.js 1:20',
+        '> 1 | var text = \'giraffe\':',
+        '|                     ^',
+        '2 | console.log(text)'
+      ].join('\n')
+
+      t.equal(
+        normalize(text),
+        normalize(expectedOutput),
+        'wooster output was as expected'
+      )
+    })
+  })
+})
+
 test('test successful browserify cli', function (t) {
   t.plan(4)
 
@@ -67,7 +254,7 @@ test('test successful browserify cli', function (t) {
       )
 
       // run the bundled javascript
-      exec('node', ['browserify.bundle.js'], function (buffer) {
+      exec('node', ['bundles/browserify.bundle.js'], function (buffer) {
         t.equal(buffer.trim(), 'giraffe', 'expected output')
 
         // on successful build, do nothing and print raw input as output
@@ -94,7 +281,66 @@ test('test error browserify cli', function (t) {
         '>> wooster output <<',
         'ParseError: Unexpected token',
         '',
-        '@ ./main-syntax-error.js 1:20',
+        '@ ./main-error.js 1:20',
+        '> 1 | var text = \'giraffe\':',
+        '|                     ^',
+        '2 | console.log(text)'
+      ].join('\n')
+
+      t.equal(
+        normalize(text),
+        normalize(expectedOutput),
+        'wooster output was as expected'
+      )
+    })
+  })
+})
+
+test('test successful browserify cli with babelify transform', function (t) {
+  t.plan(4)
+
+  exec('npm', 'run build:browserify-babelify --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') === -1,
+      'no errors on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+      t.equal(
+        buffer,
+        text,
+        'wooster output === input since no errors were detected'
+      )
+
+      // run the bundled javascript
+      exec('node', ['bundles/browserify-babelify.bundle.js'], function (buffer) {
+        t.equal(buffer.trim(), 'giraffe', 'expected output')
+
+        // on successful build, do nothing and print raw input as output
+        wooster(buffer, function (text) {
+          t.equal(buffer, text)
+        })
+      })
+    })
+  })
+})
+
+test('test error browserify cli with babelify transform', function (t) {
+  t.plan(2)
+
+  exec('npm', 'run e:build:browserify-babelify --silent'.split(' '), function (buffer) {
+    t.ok(
+      normalize(buffer).indexOf('error') !== -1,
+      'errors found on the terminal as expected'
+    )
+
+    wooster(buffer, function (text) {
+
+      var expectedOutput = [
+        '>> wooster output <<',
+        'SyntaxError: ./main-error.js: Unexpected token, expected ; (1:20)',
+        '',
+        '@ ./main-error.js 1:20',
         '> 1 | var text = \'giraffe\':',
         '|                     ^',
         '2 | console.log(text)'
@@ -126,7 +372,7 @@ test('test successful webpack cli', function (t) {
       )
 
       // run the bundled javascript
-      exec('node', ['webpack.bundle.js'], function (buffer) {
+      exec('node', ['bundles/webpack.bundle.js'], function (buffer) {
         t.equal(buffer.trim(), 'giraffe', 'expected output')
 
         // on successful build, do nothing and print raw input as output
@@ -139,7 +385,7 @@ test('test successful webpack cli', function (t) {
 })
 
 test('test error webpack cli', function (t) {
-  t.plan(3)
+  t.plan(2)
 
   exec('npm', 'run e:build:webpack --silent'.split(' '), function (buffer) {
     t.ok(
@@ -152,9 +398,9 @@ test('test error webpack cli', function (t) {
       var expectedOutput = [
         '',
         '>> wooster output <<',
-        'Module parse failed: ./main-syntax-error.js Unexpected token (1:20)',
+        'Module parse failed: ./main-error.js Unexpected token (1:20)',
         '',
-        '@ ./main-syntax-error.js 1:20',
+        '@ ./main-error.js 1:20',
         '> 1 | var text = \'giraffe\':',
         '|                     ^',
         '2 | console.log(text)'
@@ -165,152 +411,7 @@ test('test error webpack cli', function (t) {
         normalize(expectedOutput),
         'wooster output was as expected'
       )
-
-      // run the bundled javascript
-      exec('node', ['webpack.bundle.js'], function (buffer) {
-        t.ok(
-          normalize(buffer).indexOf('error') !== -1,
-          'errors found when running bundle as expected'
-        )
-      })
     })
   })
 })
 
-
-// test('test successful webpack', function (t) {
-//   t.plan(5)
-// 
-//   webpack({
-//     entry: './main.js',
-//     output: {
-//       filename: 'webpack.bundle.js'
-//     }
-//   }, function (err, stats) {
-//     t.error(err)
-//     t.error(stats.hasErrors())
-//     t.error(stats.hasWarnings())
-// 
-//     if (err) {
-//       console.error(err.stack || err)
-//       if (err.details) {
-//         console.error(err.details)
-//       }
-//       return
-//     }
-// 
-//     var info = stats.toJson()
-// 
-//     if (stats.hasErrors()) {
-//       console.error(info.errors)
-//     }
-// 
-//     if (stats.hasWarnings()) {
-//       console.warn(info.warnings)
-//     }
-// 
-//     exec('node', ['webpack.bundle.js'], function (buffer) {
-//       t.equal(buffer.trim(), 'giraffe', 'expected output')
-// 
-//       // on successful build, do nothing and print raw input as output
-//       wooster(buffer, function (text) {
-//         t.equal(buffer, text)
-//       })
-//     })
-//   })
-// })
-
-// test('test error webpack', function (t) {
-//   t.plan(3)
-// 
-//   webpack({
-//     entry: './main-syntax-error.js',
-//     output: {
-//       filename: 'webpack.bundle.js'
-//     }
-//   }, function (err, stats) {
-//     t.error(err, 'no webpack errors')
-//     t.equal(!!stats.hasErrors(), true, 'build errors found as expected')
-// 
-//     if (err) {
-//       console.error(err.stack || err)
-//       if (err.details) {
-//         console.error(err.details)
-//       }
-//       return
-//     }
-// 
-//     var info = stats.toJson()
-// 
-//     if (stats.hasErrors()) {
-//       // console.error(info.errors)
-//     }
-// 
-//     if (stats.hasWarnings()) {
-//       console.warn(info.warnings)
-//     }
-// 
-//     exec('node', ['webpack.bundle.js'], function (buffer) {
-//       var expected = [
-//         '',
-//         '>> wooster output <<',
-//         'Error: Module parse failed: ./main-syntax-error.js Unexpected token (1:20)',
-//         '',
-//         '@ ./main-syntax-error.js 1:20',
-//         '> 1 | var text = \'giraffe\':',
-//         '|                     ^',
-//         '2 | console.log(text)'
-//       ].join('\n')
-// 
-//       // on failed build, print wooster parsed output
-//       wooster(buffer, function (text) {
-//         t.equal(
-//           normalize(text),
-//           normalize(expected),
-//           'expected output'
-//         )
-//       })
-//     })
-//   })
-// })
-
-// test('test successful browserify', function (t) {
-//   t.plan(3)
-// 
-//   var b = browserify('main.js')
-//   b.bundle(function (err, buffer) {
-//     t.error(err, 'no errors during bundling as expected')
-// 
-//     fs.writeFileSync('browserify.bundle.js', buffer)
-// 
-//     exec('node', ['browserify.bundle.js'], function (buffer) {
-//       t.equal(buffer.trim(), 'giraffe', 'expected output')
-// 
-//       // on successful build, do nothing and print raw input as output
-//       wooster(buffer, function (text) {
-//         t.equal(buffer, text)
-//       })
-//     })
-//   })
-// })
-
-// test('test error browserify', function (t) {
-//   t.plan(3)
-// 
-//   var b = browserify('main-syntax-error.js')
-//   b.bundle(function (err, buffer) {
-//     console.log(err)
-//     t.error(err, 'no errors during bundling as expected')
-// 
-//     fs.writeFileSync('browserify.bundle.js', buffer)
-// 
-//     exec('node', ['browserify.bundle.js'], function (buffer) {
-//       t.equal(buffer.trim(), 'giraffe', 'expected output')
-// 
-//       // on successful build, do nothing and print raw input as output
-//       wooster(buffer, function (text) {
-//         t.equal(buffer, text)
-//       })
-//     })
-//   })
-// })

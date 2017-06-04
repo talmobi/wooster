@@ -330,20 +330,25 @@ function init (text, callback) {
     // and a context snippet with column indicated by a ^ marker)
 
     if (_bestUrl) {
-      var line = _lines.slice( _bestUrl.lineNumber - 1).filter(function (l) {
-        return l.indexOf('^') >= 0
-      })[0]
-      var lineNumber = _bestUrl.line.split(':')[1].replace(/\D/g, '')
-      var column = line.indexOf('^')
+      try {
+        var line = _lines.slice( _bestUrl.lineNumber - 1).filter(function (l) {
+          return l.indexOf('^') >= 0
+        })[0]
 
-      matches.push({
-        line: line,
-        weight: 999,
-        lineNumber: lineNumber,
-        match: '(' + lineNumber + ':' + column + ')'
-      })
+        var lineNumber = _bestUrl.line.split(':')[1].replace(/\D/g, '')
+        var column = line.indexOf('^')
 
-      debug('special case positioning found: ' + matches[0].match)
+        matches.push({
+          line: line,
+          weight: 999,
+          lineNumber: lineNumber,
+          match: '(' + lineNumber + ':' + column + ')'
+        })
+
+        debug('special case positioning found: ' + matches[0].match)
+      } catch (err) {
+        debug('no special case positioning found.')
+      }
     }
   }
 
