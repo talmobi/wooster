@@ -1,6 +1,6 @@
 {
   "name": "wooster",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "simple JavaScript error detection/parser/simplifier/highlighter",
   "main": "snippet.js",
   "bin": {
