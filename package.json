@@ -36,6 +36,10 @@
     "url": "https://github.com/talmobi/wooster/issues",
     "email": "talmo.christian@gmail.com"
   },
+  "files": [
+    "cli.js",
+    "snippet.js"
+  ],
   "dependencies": {
     "cli-color": "^1.2.0",
     "minimist": "^1.2.0"
