@@ -426,6 +426,7 @@ function processInput () {
     var minOffset = String(j).trim().length
 
     log()
+    log(clc.reset)
     log(' >> wooster output << ')
     if (_likelyErrorDescription.length > 0) {
       // shorten urls in error description
