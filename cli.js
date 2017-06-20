@@ -5,14 +5,25 @@ var buffer = ''
 var timeout
 
 var argv = require('minimist')(process.argv.slice(2))
-var _timeout = argv.t || process.env.TIMEOUT || 25
+var _timeout = argv.t || argv['timeout']
+
+if (_timeout == null) _timeout = 15
 
 process.stdin.on('data', function (chunk) {
   buffer += chunk
-  clearTimeout(timeout)
-  timeout = setTimeout(function () {
-    wooster(buffer)
+  if (_timeout > 0) {
+    clearTimeout(timeout)
+    timeout = setTimeout(function () {
+      run()
+    }, _timeout)
+  } else {
+    run()
+  }
+
+  function run () {
+    var output = wooster(buffer)
     buffer = ''
-  }, _timeout)
+    process.stdout.write(output)
+  }
 })
 

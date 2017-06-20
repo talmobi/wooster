@@ -11,6 +11,12 @@ var test = require('tape')
 
 var _spawns = []
 
+// TODO update tests for new API
+// function wooster (buffer, callback) {
+//   callback(_wooster(buffer))
+// }
+
+// cleaning up
 process.on('exit', function () {
   _spawns.forEach(function (spawn) {
     try {

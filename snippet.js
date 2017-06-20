@@ -120,14 +120,14 @@ function transformToRelativePaths (text, callback) {
   return text
 }
 
-function init (text, callback) {
+function init (text) {
+  if (typeof text !== 'string' && typeof text.toString === 'function') {
+    text = text.toString()
+  }
+
   var _rawInputText = text
   if (text.indexOf('error') === -1 && text.indexOf('Error') === -1) {
-    if (typeof callback === 'function') {
-      return callback(_rawInputText)
-    } else {
-      return process.stdout.write(_rawInputText)
-    }
+    return _rawInputText
   }
 
   debug(' === wooster input === ')
@@ -253,11 +253,7 @@ function init (text, callback) {
   // if (!urls[0]) return console.log('no errors detected')
   if (!bestUrl) {
     debug('no url matches')
-    if (typeof callback === 'function') {
-      return callback(_rawInputText)
-    } else {
-      return process.stdout.write(_rawInputText)
-    }
+    return _rawInputText
   }
 
   debug('')
@@ -354,11 +350,7 @@ function init (text, callback) {
 
   if (!matches.length > 0) {
     debug('still no positional matches, even after checking special cases')
-    if (typeof callback === 'function') {
-      return callback(_rawInputText)
-    } else {
-      return process.stdout.write(_rawInputText)
-    }
+    return _rawInputText
   }
 
   var r = matches.sort(function (a, b) {
@@ -394,7 +386,12 @@ function init (text, callback) {
 
   debug('   > most likely error description: ' + _likelyErrorDescription)
 
-  trigger(callback)
+  try {
+    return processInput()
+  } catch (err) {
+    debug('error processing input')
+    return _rawInputText
+  }
 
   // console.log(' ==== GIRAFFE END ==== ')
 }
@@ -409,107 +406,99 @@ function parsePosition (pos) {
   }
 }
 
-var _timeout
-function trigger (callback) {
-  clearTimeout(_timeout)
-  _timeout = setTimeout(function () {
-    var output = []
+function processInput () {
+  var output = []
 
-    var log = function (str) {
-      output.push(str)
-    }
+  var log = function (str) {
+    output.push(str)
+  }
 
-    _resolved.forEach(function (r) {
-      var { url, pos } = r
-      var buffer = fs.readFileSync(url, { encoding: 'utf8' })
-      var lines = buffer.split('\n')
-      var i = Math.max(0, pos.line - 5)
-      var j = Math.min(lines.length - 1, i + 4 + 2)
-      // log('pos.line: ' + pos.line)
-      // log('i: ' + i)
-      // log('j: ' + j)
+  _resolved.forEach(function (r) {
+    var { url, pos } = r
+    var buffer = fs.readFileSync(url, { encoding: 'utf8' })
+    var lines = buffer.split('\n')
+    var i = Math.max(0, pos.line - 5)
+    var j = Math.min(lines.length - 1, i + 4 + 2)
+    // log('pos.line: ' + pos.line)
+    // log('i: ' + i)
+    // log('j: ' + j)
 
-      var minOffset = String(j).trim().length
+    var minOffset = String(j).trim().length
 
-      log()
-      log(' >> wooster output << ')
-      if (_likelyErrorDescription.length > 0) {
-        // shorten urls in error description
-        // (path/to/file -> p/t/file)
-        var relativeUrl = transformToRelativePaths(url)
-        var words = _likelyErrorDescription.split(/\s+/)
-        words = words.map(function (word) {
-          if (word.indexOf('.') >= 0 || word.indexOf('/') >= 0) {
-            word = transformToRelativePaths(word)
-            var split = word.split('/')
-            var lastFileName = split.pop()
-            var result = ''
-            split.forEach(function (fileName) {
-              if (fileName) {
-                result += fileName[0] + '/'
-              }
-            })
-            result += lastFileName
-            return clc.magenta(result)
-          } else {
-            return word
-          }
-        })
-        log(
-          ' ' + clc.redBright(words.join(' '))
-        )
-      }
-      log()
-      log(
-        ' @ ' +
-        transformToRelativePaths(url, strToMagenta) +
-        ' ' + clc.redBright(pos.line) +
-        ':' + clc.redBright(pos.column)
-      )
-      // log('---')
-      var result = []
-      for (; i < j; i++) {
-        var lineNumber = String(i + 1).trim()
-        while (lineNumber.length < minOffset) lineNumber = (' ' + lineNumber)
-
-        if (i === pos.line - 1) {
-          lineNumber = clc.redBright('> ') + clc.whiteBright(lineNumber)
+    log()
+    log(' >> wooster output << ')
+    if (_likelyErrorDescription.length > 0) {
+      // shorten urls in error description
+      // (path/to/file -> p/t/file)
+      var relativeUrl = transformToRelativePaths(url)
+      var words = _likelyErrorDescription.split(/\s+/)
+      words = words.map(function (word) {
+        if (word.indexOf('.') >= 0 || word.indexOf('/') >= 0) {
+          word = transformToRelativePaths(word)
+          var split = word.split('/')
+          var lastFileName = split.pop()
+          var result = ''
+          split.forEach(function (fileName) {
+            if (fileName) {
+              result += fileName[0] + '/'
+            }
+          })
+          result += lastFileName
+          return clc.magenta(result)
         } else {
-          lineNumber = '  ' + lineNumber
+          return word
         }
+      })
+      log(
+        ' ' + clc.redBright(words.join(' '))
+      )
+    }
+    log()
+    log(
+      ' @ ' +
+      transformToRelativePaths(url, strToMagenta) +
+      ' ' + clc.redBright(pos.line) +
+      ':' + clc.redBright(pos.column)
+    )
+    // log('---')
+    var result = []
+    for (; i < j; i++) {
+      var lineNumber = String(i + 1).trim()
+      while (lineNumber.length < minOffset) lineNumber = (' ' + lineNumber)
 
-        lineNumber += ' | '
-
-        result.push(lineNumber + lines[i])
-        // log(lines[i])
-
-        // draw an arrow pointing upward to column location
-        if (i === pos.line - 1) {
-          var pointerOffset = ''
-          for (var x = 0; x < pos.column; x++) {
-            pointerOffset += ' '
-          }
-          var _o = String(j).trim().split(/./).join(' ') + '   | '
-          // log(pointerOffset + '^')
-          result.push(_o + pointerOffset + '^')
-        }
+      if (i === pos.line - 1) {
+        lineNumber = clc.redBright('> ') + clc.whiteBright(lineNumber)
+      } else {
+        lineNumber = '  ' + lineNumber
       }
 
-      result.forEach(function (line) {
-        var prettyLine = parsePrettyLine(line, url)
-        log(prettyLine)
-      })
+      lineNumber += ' | '
 
-      // log('---')
-    })
-    // log('_resolved: ' + _resolved.length)
-    var textContent = output.join('\n')
-    if (typeof callback === 'function') {
-      callback(textContent)
-    } else {
-      console.log(textContent)
+      result.push(lineNumber + lines[i])
+      // log(lines[i])
+
+      // draw an arrow pointing upward to column location
+      if (i === pos.line - 1) {
+        var pointerOffset = ''
+        for (var x = 0; x < pos.column; x++) {
+          pointerOffset += ' '
+        }
+        var _o = String(j).trim().split(/./).join(' ') + '   | '
+        // log(pointerOffset + '^')
+        result.push(_o + pointerOffset + '^')
+      }
     }
-  }, 5)
+
+    result.forEach(function (line) {
+      var prettyLine = parsePrettyLine(line, url)
+      log(prettyLine)
+    })
+
+    // log('---')
+  })
+  // log('_resolved: ' + _resolved.length)
+  var textContent = output.join('\n')
+  return textContent
 }
 
 function testToken (str, tests, globalModifiers) {
@@ -1332,4 +1321,13 @@ function parsePrettyLine (line, url) {
 // init(browserifyString)
 // init(standardString)
 
-module.exports = init
+function _api (text, callback) {
+  var output = init(text)
+  if (callback) {
+    callback(output)
+  } else {
+    return output
+  }
+}
+
+module.exports = _api
