@@ -499,7 +499,7 @@ function processInput () {
   })
   // log('_resolved: ' + _resolved.length)
   var textContent = output.join('\n')
-  return textContent
+  return textContent + '\n\n'
 }
 
 function testToken (str, tests, globalModifiers) {
