@@ -2,17 +2,34 @@ var path = require('path')
 var fs = require('fs')
 var clc = require('cli-color')
 
-// https://github.com/chalk/ansi-regex
-var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
-
 var DEBUG = false
 
 function debug () {
   DEBUG && console.log.apply(this, arguments)
 }
 
+// https://github.com/chalk/ansi-regex
+var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
+
 function stripAnsi (str) {
   return str.replace(ansiRegex, '')
+}
+
+var _iterationBoxCounter = 0
+var _iterationBoxCounterLimit = 4
+function getIerationBox () {
+  _iterationBoxCounter = (_iterationBoxCounter + 1) % _iterationBoxCounterLimit
+
+  var box = ''
+  for (var i = 0; i < _iterationBoxCounterLimit; i++) {
+    if (i === _iterationBoxCounter) {
+      box += clc.bgMagentaBright('  ')
+    } else {
+      box += '  '
+    }
+  }
+
+  return box
 }
 
 function stripSnippets (str) {
@@ -426,7 +443,8 @@ function processInput () {
     var minOffset = String(j).trim().length
 
     log()
-    log(clc.reset)
+    // log(clc.reset) // TODO
+    // log(' >> wooster output << ' + getIerationBox())
     log(' >> wooster output << ')
     if (_likelyErrorDescription.length > 0) {
       // shorten urls in error description
