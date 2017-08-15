@@ -4,14 +4,14 @@ var wooster = require('./snippet.js')
 var buffer = ''
 var timeout
 
-var argv = require('minimist')(process.argv.slice(2))
-var _timeout = argv.t || argv['timeout']
+var argv = require('minimist')( process.argv.slice( 2 ) )
+var _timeout = argv.t || argv[ 'timeout' ]
 
-if (_timeout == null) _timeout = 15
+if ( _timeout == null ) _timeout = 15
 
-process.stdin.on('data', function (chunk) {
-  buffer += chunk
-  if (_timeout > 0) {
+process.stdin.on('data', function ( chunk ) {
+  buffer += chunk.toString( 'utf8' )
+  if ( _timeout > 0 ) {
     clearTimeout(timeout)
     timeout = setTimeout(function () {
       run()
@@ -21,9 +21,9 @@ process.stdin.on('data', function (chunk) {
   }
 
   function run () {
-    var output = wooster(buffer)
+    var output = wooster( buffer )
     buffer = ''
-    process.stdout.write(output)
+    process.stdout.write( output )
   }
 })
 
