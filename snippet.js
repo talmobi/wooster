@@ -172,7 +172,10 @@ function init (text) {
   _lastMode = 'normal'
   _likelyErrorDescription = ''
 
-  var cwdDirs = fs.readdirSync(process.cwd()).filter(function (path) { return fs.lstatSync(path).isDirectory() })
+  var cwdDirs = fs.readdirSync( process.cwd() ).filter( function ( path ) {
+      return fs.lstatSync(path).isDirectory()
+    }
+  )
   debug(' === cwd directories === ')
   debug(cwdDirs)
   debug(' === ')
@@ -265,7 +268,6 @@ function init (text) {
     }
   }
   debug('   > most likely source URL: ' + bestUrl)
-
 
   // if (!urls[0]) return console.log('no errors detected')
   if (!bestUrl) {
