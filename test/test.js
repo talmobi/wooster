@@ -1,4 +1,15 @@
-var wooster = require('../snippet.js')
+var wooster
+
+if ( typeof process.env.TEST_SOURCE === 'string' ) {
+  var source = process.env.TEST_SOURCE
+  wooster = require( source )
+  console.log( 'testing source: ' + source )
+} else {
+  // wooster = require('../snippet.js')
+  wooster = require( '../src/version2.js' )
+  // wooster = require( '../dist/bundle.min.js' )
+}
+
 var path = require('path')
 var childProcess = require('child_process')
 var fs = require('fs')
@@ -58,15 +69,15 @@ function createIOHandler (callback) {
   }
 }
 
-function stripAnsi (str) {
+function stripAnsi ( str ) {
   // https://github.com/chalk/ansi-regex
   var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
-  return str.replace(ansiRegex, '')
+  return str.replace( ansiRegex, '' )
 }
 
-function normalize (str) {
-  var s = stripAnsi(str)
-  s = s.replace(/\s+/g, '')
+function normalize ( str ) {
+  var s = stripAnsi( str )
+  s = s.replace( /\s+/g, '' )
   s = s.toLowerCase()
   return s
 }
@@ -76,14 +87,14 @@ test('test successful stylus cli', function (t) {
 
   exec('npm', 'run build:stylus --silent'.split(' '), function (buffer) {
     t.ok(
-      normalize(buffer).indexOf('error') === -1,
+      normalize( buffer ).indexOf( 'error' ) === -1,
       'no errors on the terminal as expected'
     )
 
     wooster(buffer, function (text) {
       t.equal(
-        buffer,
         text,
+        buffer,
         'wooster output === input since no errors were detected'
       )
 
@@ -102,7 +113,7 @@ test('test error stylus cli', function (t) {
 
   exec('npm', 'run e:build:stylus --silent'.split(' '), function (buffer) {
     t.ok(
-      normalize(buffer).indexOf('error') !== -1,
+      normalize( buffer ).indexOf( 'error' ) !== -1,
       'errors found on the terminal as expected'
     )
 
@@ -152,6 +163,7 @@ test('test successful less cli', function (t) {
     })
   })
 })
+
 
 test('test error less cli', function (t) {
   t.plan(2)

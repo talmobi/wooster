@@ -256,7 +256,7 @@ function init (text) {
 
   var bestUrl
   var _bestUrl
-  for (var i = 0; i < urls.length; i++) {
+  for ( var i = 0; i < urls.length; i++ ) {
     var url = urls[i]
     var resolvedPath = path.resolve(url.match)
     var exists = fs.existsSync(resolvedPath)
@@ -534,7 +534,7 @@ function testToken (str, tests, globalModifiers) {
     split = test.split('/')
     t = split[0]
     r = split[1] || ''
-    if (globalModifiers) r += globalModifiers
+    if ( globalModifiers ) r += globalModifiers
 
     for (j = 0; j < r.length; j++) {
       var c = r[j]
