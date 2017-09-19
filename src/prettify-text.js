@@ -172,7 +172,7 @@ function prettifyText ( text, filename ) {
                 var nextCharacter = line[ i + 1 ]
                 if ( nextCharacter === '/' ) {
                   tokenBuffer += c
-                  tokenBuffer += nextC
+                  tokenBuffer += nextCharacter
                   i += 1
 
                   // finish current token
@@ -187,7 +187,7 @@ function prettifyText ( text, filename ) {
               }
 
             default:
-              buffer += c
+              tokenBuffer += c
           }
           break
 
