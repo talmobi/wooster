@@ -8,21 +8,30 @@ function parseContext ( opts ) {
 
   var text = opts.text
   var rawLines = text.split( '\n' )
-  var lines = rawLines.slice()
+  var lines = rawLines
 
-  // prettify context lines
-  if ( opts.prettify ) {
-    var buffer = lines.join( '\n' )
-    var path = opts.url || opts.path || opts.filename || opts.filepath
-    var p = prettifyText( buffer, path )
-    lines = p.split( '\n' )
-  }
-
-  var colno = opts.colno
   var lineno = opts.lineno
+  var colno = opts.colno
 
   var i = Math.max( 0, lineno - 6 ) // first line
   var j = Math.min( lines.length - 1, i + 4 + 2 + 2 ) // last line
+
+  // prettify context lines
+  if ( opts.prettify ) {
+    var begin = Math.max( 0, i - 3 )
+    var end = Math.min( lines.length, j + 1 )
+
+    var slice = lines.slice( begin, end )
+
+    var buffer = slice.join( '\n' )
+    var path = ( opts.url || opts.path || opts.filename || opts.filepath )
+    var prettyText = prettifyText( buffer, path )
+    var prettyLines = prettyText.split( '\n' )
+
+    prettyLines.forEach( function ( prettyLine, index ) {
+      lines[ begin + index ] = prettyLine
+    } )
+  }
 
   var minLeftPadding = String( j ).trim().length
 
