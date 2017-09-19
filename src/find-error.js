@@ -33,6 +33,10 @@ function findError ( text ) {
   var _rawText = text
   text = removeContextFromText( text )
 
+  if ( text.toLowerCase().indexOf( 'error' ) === -1 ) {
+    return false
+  }
+
   var _lines = text.split('\n')
 
   debug(' === cwd directories === ')
