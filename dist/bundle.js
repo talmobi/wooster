@@ -3560,6 +3560,10 @@ function findError(text) {
   var _rawText = text;
   text = removeContextFromText(text);
 
+  if (text.toLowerCase().indexOf('error') === -1) {
+    return false;
+  }
+
   var _lines = text.split('\n');
 
   debug(' === cwd directories === ');
@@ -3846,21 +3850,30 @@ function parseContext(opts) {
 
   var text = opts.text;
   var rawLines = text.split('\n');
-  var lines = rawLines.slice();
+  var lines = rawLines;
 
-  // prettify context lines
-  if (opts.prettify) {
-    var buffer = lines.join('\n');
-    var path = opts.url || opts.path || opts.filename || opts.filepath;
-    var p = prettifyText(buffer, path);
-    lines = p.split('\n');
-  }
-
-  var colno = opts.colno;
   var lineno = opts.lineno;
+  var colno = opts.colno;
 
   var i = Math.max(0, lineno - 6); // first line
   var j = Math.min(lines.length - 1, i + 4 + 2 + 2); // last line
+
+  // prettify context lines
+  if (opts.prettify) {
+    var begin = Math.max(0, i - 3);
+    var end = Math.min(lines.length, j + 1);
+
+    var slice = lines.slice(begin, end);
+
+    var buffer = slice.join('\n');
+    var path = opts.url || opts.path || opts.filename || opts.filepath;
+    var prettyText = prettifyText(buffer, path);
+    var prettyLines = prettyText.split('\n');
+
+    prettyLines.forEach(function (prettyLine, index) {
+      lines[begin + index] = prettyLine;
+    });
+  }
 
   var minLeftPadding = String(j).trim().length;
 
@@ -4092,7 +4105,7 @@ function prettifyText(text, filename) {
                 var nextCharacter = line[i + 1];
                 if (nextCharacter === '/') {
                   tokenBuffer += c;
-                  tokenBuffer += nextC;
+                  tokenBuffer += nextCharacter;
                   i += 1;
 
                   // finish current token
@@ -4107,7 +4120,7 @@ function prettifyText(text, filename) {
               }
 
             default:
-              buffer += c;
+              tokenBuffer += c;
           }
           break;
 
@@ -4328,7 +4341,7 @@ try {
 var colorify = require('./colorify.js');
 
 function debug(msg) {
-  console.log(msg);
+  // console.log( msg )
 }
 
 function transformToRelativePaths(text, transformPath) {
@@ -4397,13 +4410,11 @@ try {
   isNode = false;
 }
 
-var colorify = require('./colorify.js');
-
 // console.log( ' == isNode: ' + isNode + ' == ' )
 
-function debug(msg) {
-  console.log(msg);
-}
+function debug(msg) {}
+// console.log( msg )
+
 
 // https://github.com/chalk/ansi-regex
 var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g;
@@ -4412,10 +4423,13 @@ function stripAnsi(str) {
   return str.replace(ansiRegex, '');
 }
 
-var parseContext = require('./parse-context.js');
+var colorify = require('./colorify.js');
+
 var findError = require('./find-error.js');
 var transformToRelativePaths = require('./transform-to-relative-paths.js');
 var shortenUrls = require('./shorten-urls.js');
+var prettifyText = require('./prettify-text.js');
+var parseContext = require('./parse-context.js');
 
 function _api(text, callback) {
   if (!isNode) {
@@ -4522,7 +4536,12 @@ function _api(text, callback) {
   return returnValue;
 }
 
+_api.prettifyText = prettifyText;
+_api.parseContext = parseContext;
+_api.shortenUrls = shortenUrls;
+_api.colorify = colorify;
+
 module.exports = _api;
 
-},{"./colorify.js":116,"./find-error.js":117,"./parse-context.js":118,"./shorten-urls.js":121,"./transform-to-relative-paths.js":122}]},{},[123])(123)
+},{"./colorify.js":116,"./find-error.js":117,"./parse-context.js":118,"./prettify-text.js":119,"./shorten-urls.js":121,"./transform-to-relative-paths.js":122}]},{},[123])(123)
 });
