@@ -2,10 +2,14 @@
   "name": "wooster",
   "version": "0.0.11",
   "description": "simple JavaScript error detection/parser/simplifier/highlighter",
-  "main": "snippet.js",
+  "main": "dist/bundle.min.js",
   "bin": {
     "wooster": "./cli.js"
   },
+  "files": [
+    "cli.js",
+    "dist/bundle.min.js"
+  ],
   "scripts": {
     "build:webpack": "cd test && webpack main.js bundles/webpack.bundle.js",
     "build:rollup": "cd test && rollup main.js --format cjs -o bundles/rollup.bundle.js",
@@ -40,10 +44,6 @@
     "url": "https://github.com/talmobi/wooster/issues",
     "email": "talmo.christian@gmail.com"
   },
-  "files": [
-    "cli.js",
-    "snippet.js"
-  ],
   "dependencies": {
     "cli-color": "^1.2.0",
     "minimist": "^1.2.0"
@@ -55,6 +55,7 @@
     "csslint": "^1.0.5",
     "less": "^2.7.2",
     "rollup": "^0.41.6",
+    "spacestandard": "0.0.6",
     "stylus": "^0.54.5",
     "tap-bail": "^1.0.0",
     "tap-spec": "^4.1.1",
