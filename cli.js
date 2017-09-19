@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var wooster = require('./snippet.js')
+var wooster = require('./dist/bundle.min.js')
 var buffer = ''
 var timeout
 var bufferClearTimeout
