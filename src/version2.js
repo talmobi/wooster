@@ -10,8 +10,6 @@ try {
   isNode = false
 }
 
-var colorify = require( './colorify.js' )
-
 // console.log( ' == isNode: ' + isNode + ' == ' )
 
 function debug ( msg ) {
@@ -25,10 +23,13 @@ function stripAnsi (str) {
   return str.replace(ansiRegex, '')
 }
 
-var parseContext = require( './parse-context.js' )
+var colorify = require( './colorify.js' )
+
 var findError = require( './find-error.js' )
 var transformToRelativePaths = require( './transform-to-relative-paths.js' )
 var shortenUrls = require( './shorten-urls.js' )
+var prettifyText = require( './prettify-text.js' )
+var parseContext = require( './parse-context.js' )
 
 function _api ( text, callback ) {
   if ( !isNode ) {
@@ -146,5 +147,10 @@ function _api ( text, callback ) {
 
   return returnValue
 }
+
+_api.prettifyText = prettifyText
+_api.parseContext = parseContext
+_api.shortenUrls = shortenUrls
+_api.colorify = colorify
 
 module.exports = _api
