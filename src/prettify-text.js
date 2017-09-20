@@ -3,8 +3,8 @@ var colorify = require( './colorify.js' )
 // https://github.com/chalk/ansi-regex
 var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
 
-function stripAnsi (str) {
-  return str.replace(ansiRegex, '')
+function stripAnsi ( str ) {
+  return str.replace( ansiRegex, '' )
 }
 
 function prettifyText ( text, filename ) {
@@ -26,9 +26,10 @@ function prettifyText ( text, filename ) {
 
   text = stripAnsi( text )
 
-
   var penColor = 'whiteBright'
   var mode = 'normal'
+
+  var nextCharacter
 
   var prettyLines = []
   var lines = text.split( '\n' )
@@ -44,7 +45,7 @@ function prettifyText ( text, filename ) {
 
       switch ( mode ) {
         case 'normal':
-          switch (c) {
+          switch ( c ) {
             case "'":
             case '"':
               // finish current token ( if any )
@@ -58,11 +59,9 @@ function prettifyText ( text, filename ) {
               break
 
             case '{':
-            case '}':
-              // TODO unsure to include braces?
+            case '}': // TODO unsure to include braces?
             case '<':
-            case '>':
-              // TODO unsure to include braces?
+            case '>': // TODO unsure to include braces?
             case '+':
             case '-':
             case '*':
@@ -84,7 +83,7 @@ function prettifyText ( text, filename ) {
 
             case '/':
               if ( ( i + 1 ) < line.length ) {
-                var nextCharacter = line[ i + 1 ]
+                nextCharacter = line[ i + 1 ]
                 switch ( nextCharacter ) {
                   case '/':
                     // finish current token
@@ -147,7 +146,7 @@ function prettifyText ( text, filename ) {
           break
 
         case 'quotes':
-          switch (c) {
+          switch ( c ) {
             case "'":
             case '"':
               tokenBuffer += c
@@ -166,10 +165,10 @@ function prettifyText ( text, filename ) {
           break
 
         case 'commentstar':
-          switch (c) {
+          switch ( c ) {
             case '*':
-              if ( (i + 1 ) < line.length ) {
-                var nextCharacter = line[ i + 1 ]
+              if ( ( i + 1 ) < line.length ) {
+                nextCharacter = line[ i + 1 ]
                 if ( nextCharacter === '/' ) {
                   tokenBuffer += c
                   tokenBuffer += nextCharacter
@@ -182,9 +181,9 @@ function prettifyText ( text, filename ) {
                   // enter new mode
                   mode = 'normal'
                   penColor = 'whiteBright'
-                  break
                 }
               }
+              break
 
             default:
               tokenBuffer += c
@@ -192,7 +191,7 @@ function prettifyText ( text, filename ) {
           break
 
         default:
-          throw new Error('prettify-text.js error')
+          throw new Error( 'prettify-text.js error' )
       }
     }
 
@@ -213,7 +212,7 @@ function prettifyText ( text, filename ) {
 }
 
 function parseCodeToken ( token, penColor ) {
-  if (testToken(token, [
+  if ( testToken( token, [
     'function',
     'atob',
     'btoa',
@@ -222,11 +221,11 @@ function parseCodeToken ( token, penColor ) {
     'encodeURI',
     'encodeURIComponent',
     'document'
-  ], 'ts')) {
+  ], 'ts' ) ) {
     return colorify( token, 'cyan' )
   }
 
-  if (testToken(token, [
+  if ( testToken( token, [
     'return',
     'var',
     'new',
@@ -261,20 +260,20 @@ function parseCodeToken ( token, penColor ) {
     'from',
     'arguments',
     'window'
-  ], 'ts')) {
+  ], 'ts' ) ) {
     return colorify( token, 'redBright' )
   }
 
-  if (testToken(token, [
+  if ( testToken( token, [
     'true',
     'false',
     'null',
     'undefined'
-  ], 'ts')) {
+  ], 'ts' ) ) {
     return colorify( token, 'magentaBright' )
   }
 
-  if (testToken(token, [
+  if ( testToken( token, [
     'Date',
     'Object',
     'Function',
@@ -284,7 +283,7 @@ function parseCodeToken ( token, penColor ) {
     'RegExp',
     'Array',
     'Boolean'
-  ], 'ts')) {
+  ], 'ts' ) ) {
     return colorify( token, 'yellow' )
   }
 
@@ -292,7 +291,7 @@ function parseCodeToken ( token, penColor ) {
 }
 
 function parseStyleToken ( token, penColor ) {
-  if (testToken(token, [
+  if ( testToken( token, [
     'align-content',
     'align-items',
     'align-self',
@@ -474,11 +473,11 @@ function parseStyleToken ( token, penColor ) {
     'word-spacing',
     'word-wrap',
     'z-index'
-  ])) {
+  ] ) ) {
     return colorify( token, 'cyan' )
   }
 
-  if (testToken(token, [
+  if ( testToken( token, [
     'html',
     'head',
     'meta',
@@ -537,11 +536,11 @@ function parseStyleToken ( token, penColor ) {
     'form', 'button', 'input', 'textarea', 'select', 'option', 'optgroup', 'label',
 
     'fieldset', 'legend', 'keygen', 'command', 'datalist', 'menu', 'output', 'details', 'summary'
-  ], 'ts')) {
+  ], 'ts' ) ) {
     return colorify( token, 'redBright' )
   }
 
-  if (testToken(token, [
+  if ( testToken( token, [
     'sans-serif',
     'monospace',
     'Times',
@@ -587,15 +586,15 @@ function parseStyleToken ( token, penColor ) {
     'center',
     'pre',
     '0'
-  ], 's')) {
+  ], 's' ) ) {
     return colorify( token, 'magentaBright' )
   }
 
-  if (token.trim()[0] === '.') {
+  if ( token.trim()[ 0 ] === '.' ) {
     return colorify( token, 'greenBright' )
   }
 
-  if (token.trim()[0] === '#') {
+  if ( token.trim()[ 0 ] === '#' ) {
     return colorify( token, 'yellowBright' )
   }
 
@@ -603,22 +602,22 @@ function parseStyleToken ( token, penColor ) {
 }
 
 function testToken ( str, tests, globalModifiers ) {
-  if (typeof tests === 'string') tests = [ tests ]
+  if ( typeof tests === 'string' ) tests = [ tests ]
 
   var i, test, t, split, r, s, j
 
-  loop: for (i = 0; i < tests.length; i++) {
-    test = tests[i]
+  loop: for ( i = 0; i < tests.length; i++ ) {
+    test = tests[ i ]
     s = str
 
-    split = test.split('/')
-    t = split[0]
-    r = split[1] || ''
+    split = test.split( '/' )
+    t = split[ 0 ]
+    r = split[ 1 ] || ''
     if ( globalModifiers ) r += globalModifiers
 
-    for (j = 0; j < r.length; j++) {
-      var c = r[j]
-      switch (c) {
+    for ( j = 0; j < r.length; j++ ) {
+      var c = r[ j ]
+      switch ( c ) {
         case 'i':
           t = t.toLowerCase()
           s = s.toLowerCase()
@@ -629,12 +628,12 @@ function testToken ( str, tests, globalModifiers ) {
           break
         case 's': // clamp to same size
           // same length/size
-          if (s.length !== t.length) continue loop
-          break;
+          if ( s.length !== t.length ) continue loop
+          break
       }
     }
 
-    if (s.indexOf(t) >= 0) return true
+    if ( s.indexOf( t ) >= 0 ) return true
   }
 
   return false

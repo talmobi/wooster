@@ -2,14 +2,11 @@
 // find error sources in text by url and context weight
 
 var fs, path
-var isNode = false
 try {
   var _require = require
   fs = _require( 'fs' )
   path = _require( 'path' )
-  isNode = true
 } catch ( err ) {
-  isNode = false
 }
 
 function debug ( msg ) {
@@ -22,24 +19,23 @@ function parsePosition ( pos ) {
   // log('  line positioning string detected: ' + pos)
   var split = pos.split( /\D+/ )
     .filter( function ( s ) { return s } )
-  debug('  parsed positioning string: ' + split.toString())
+  debug( '  parsed positioning string: ' + split.toString() )
   return {
-    lineno: /\d+/.exec(split[0])[0],
-    colno: /\d+/.exec(split[1])[0]
+    lineno: /\d+/.exec( split[ 0 ] )[ 0 ],
+    colno: /\d+/.exec( split[ 1 ] )[ 0 ]
   }
 }
 
 function findError ( text ) {
-  var _rawText = text
   text = removeContextFromText( text )
 
   if ( text.toLowerCase().indexOf( 'error' ) === -1 ) {
     return false
   }
 
-  var _lines = text.split('\n')
+  var _lines = text.split( '\n' )
 
-  debug(' === cwd directories === ')
+  debug( ' === cwd directories === ' )
   var cwdDirs = []
   if ( process && process.version && fs ) {
     cwdDirs = fs.readdirSync( process.cwd() )
@@ -47,10 +43,10 @@ function findError ( text ) {
         return fs.lstatSync( path ).isDirectory()
       } )
   }
-  debug(cwdDirs)
-  debug(' === ')
+  debug( cwdDirs )
+  debug( ' === ' )
 
-  debug(' === urls === ')
+  debug( ' === urls === ' )
   var match
   var urls = []
   var seekBuffer = text
@@ -64,10 +60,10 @@ function findError ( text ) {
     var line = _lines[ lineNumber ]
     seekBuffer = text.substring( indexOf + match[ 0 ].length )
 
-    if ( line.toLowerCase().indexOf('node_modules' ) !== -1) weight -= 1.5
-    if ( line.toLowerCase().indexOf( 'npm') !== -1 ) weight -= 0.1
-    if ( line.toLowerCase().indexOf( 'Npm') !== -1 ) weight -= 0.25
-    if ( line.toLowerCase().indexOf( 'NPM') !== -1 ) weight -= 0.75
+    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 1.5
+    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 0.1
+    if ( line.toLowerCase().indexOf( 'Npm' ) !== -1 ) weight -= 0.25
+    if ( line.toLowerCase().indexOf( 'NPM' ) !== -1 ) weight -= 0.75
 
     if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 1
     if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 0.49
@@ -81,7 +77,7 @@ function findError ( text ) {
     // if prev line contains 'error' increase weight a little bit
     var prevLine = _lines[ lineNumber - 1 ]
     if ( typeof prevLine === 'string' ) {
-      if ( prevLine.toLowerCase().indexOf( 'error') !== -1 ) weight += 0.50
+      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 0.50
 
       if ( rePosition.test( prevLine.toLowerCase() ) ) {
         weight += 0.05
@@ -101,44 +97,44 @@ function findError ( text ) {
     debug( ' url found: ' + match[ 0 ] + ', weight: ' + weight )
     debug( '  line: ' + line )
 
-    urls.push({
+    urls.push( {
       weight: weight,
       line: line,
       lineNumber: lineNumber,
-      match: match[0]
-    })
+      match: match[ 0 ]
+    } )
 
     // for convenience check up one dir level
-    urls.push({
+    urls.push( {
       weight: weight - 0.1,
       line: line,
       lineNumber: lineNumber,
-      match: '../' + match[0]
-    })
+      match: '../' + match[ 0 ]
+    } )
 
     // for convenience check up two dir levels
-    urls.push({
+    urls.push( {
       weight: weight - 0.15,
       line: line,
       lineNumber: lineNumber,
-      match: '../../' + match[0]
-    })
+      match: '../../' + match[ 0 ]
+    } )
 
     // for convenience check down one dir level
-    cwdDirs.forEach(function (dir) {
-      urls.push({
+    cwdDirs.forEach( function ( dir ) {
+      urls.push( {
         weight: weight - 0.20,
         line: line,
         lineNumber: lineNumber,
-        match: dir + '/' + match[0]
-      })
-    })
+        match: dir + '/' + match[ 0 ]
+      } )
+    } )
   }
 
   debug( 'sorting urls by weight' )
-  urls = urls.sort(function (a, b) {
+  urls = urls.sort( function ( a, b ) {
     return b.weight - a.weight
-  })
+  } )
 
   var bestUrl
   var bestResolvedPath
@@ -167,7 +163,7 @@ function findError ( text ) {
 
   debug( '   > most likely source URL: ' + bestUrl.match )
 
-  debug(' === positions === ')
+  debug( ' === positions === ' )
   var matches = []
   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,20}\s{0,5}?\d+\s{0,5}[)]?/g
   // match = rePosition.exec(text)
@@ -189,7 +185,7 @@ function findError ( text ) {
     debug( ' position word boundary: ' + word + ', match: ' + match[ 0 ] )
     // if matched word boundary contains '/' (path seperators) decrease weight
     // this avoids parsing path names as error positions (in case a path name happens to match)
-    if (word && word.indexOf('/') !== -1) weight -= 1
+    if ( word && word.indexOf( '/' ) !== -1 ) weight -= 1
 
     // avoid parsing lines with node_modules in them (most likely stack traces..)
     if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 1
@@ -201,7 +197,7 @@ function findError ( text ) {
     if ( line.indexOf( 'Error' ) !== -1 ) weight += 1
 
     // decrease weight if match has letters in them
-    if ( line.toLowerCase().match(/[a-z]/) ) weight -= 0.1
+    if ( line.toLowerCase().match( /[a-z]/ ) ) weight -= 0.1
 
     // if prev line contains 'error' increase weight a little bit
     var prevLine = _lines[ lineNumber - 1 ]
@@ -217,15 +213,15 @@ function findError ( text ) {
 
     if ( line.indexOf( bestUrl.match ) !== -1 ) weight++
 
-    debug(' position found: ' + match[0] + ', weight: ' + weight)
-    debug('  line: ' + line)
+    debug( ' position found: ' + match[ 0 ] + ', weight: ' + weight )
+    debug( '  line: ' + line )
 
-    matches.push({
+    matches.push( {
       line: line,
       weight: weight,
       lineNumber: lineNumber,
-      match: match[0]
-    })
+      match: match[ 0 ]
+    } )
   }
 
   // if (!matches.length > 0) return console.log('no errors detected')
@@ -244,10 +240,10 @@ function findError ( text ) {
         var line = _lines
           .slice( bestUrl.lineNumber - 1 )
           .filter( function ( l ) {
-          return ( l.indexOf( '^' ) >= 0 )
-        } )[ 0 ]
+            return ( l.indexOf( '^' ) >= 0 )
+          } )[ 0 ]
 
-        var lineNumber = bestUrl.line.split( ':' )[ 1 ].replace( /\D/g , '' )
+        var lineNumber = bestUrl.line.split( ':' )[ 1 ].replace( /\D/g, '' )
         var column = line.indexOf( '^' )
 
         matches.push( {
@@ -265,7 +261,7 @@ function findError ( text ) {
   }
 
   if ( matches.length < 1 ) {
-    debug('still no positional matches, even after checking special cases')
+    debug( 'still no positional matches, even after checking special cases' )
     return false
   }
 
@@ -286,12 +282,12 @@ function findError ( text ) {
   var _likelyErrorDescription
   _lines.forEach( function ( line ) {
     if ( line.indexOf( 'Error' ) >= 0 ) _likelyErrorDescription = line
-  })
+  } )
 
   if ( !_likelyErrorDescription ) {
     _lines.forEach( function ( line ) {
-      if ( line.toLowerCase().indexOf('unexpected') >= 0 ) _likelyErrorDescription = line
-      if ( line.toLowerCase().indexOf('failed') >= 0 ) _likelyErrorDescription = line
+      if ( line.toLowerCase().indexOf( 'unexpected' ) >= 0 ) _likelyErrorDescription = line
+      if ( line.toLowerCase().indexOf( 'failed' ) >= 0 ) _likelyErrorDescription = line
     } )
   }
 
@@ -300,7 +296,6 @@ function findError ( text ) {
   }
 
   debug( '   > most likely error description: ' + _likelyErrorDescription )
-
 
   var pos = parsePosition( bestMatch )
   return {

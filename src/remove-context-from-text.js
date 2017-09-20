@@ -12,7 +12,7 @@ function removeContextFromText ( text ) {
     var match
 
     var reLineNumber = /\s{0,5}\d+\s{1,2}[|:]?\s{0,5}/
-    var match = reLineNumber.exec(head) // match against head of string
+    var match = reLineNumber.exec( head ) // match against head of string
     if ( match && match[ 0 ] ) {
       line.possibleSnippet = true
       // debug('possibleSnippet found: ' + text)
@@ -26,10 +26,10 @@ function removeContextFromText ( text ) {
 
     if ( currentLine.possibleSnippet ) {
       if ( prevLine && prevLine.possibleSnippet ) {
-        lines[i].detectedSnippet = true
+        lines[ i ].detectedSnippet = true
       }
       if ( nextLine && nextLine.possibleSnippet ) {
-        lines[i].detectedSnippet = true
+        lines[ i ].detectedSnippet = true
       }
     }
   }

@@ -19,8 +19,8 @@ function debug ( msg ) {
 // https://github.com/chalk/ansi-regex
 var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
 
-function stripAnsi (str) {
-  return str.replace(ansiRegex, '')
+function stripAnsi ( str ) {
+  return str.replace( ansiRegex, '' )
 }
 
 var colorify = require( './colorify.js' )
@@ -60,13 +60,13 @@ function _api ( text, callback ) {
     debug( 'pos: ' + error.lineno + ':' + error.colno )
     var filepath = error.path || path.resolve( error.url.match )
 
-    var lines = parseContext({
+    var lines = parseContext( {
       filename: filepath,
       prettify: opts.prettify,
       text: fs.readFileSync( filepath, { encoding: 'utf8' } ),
       lineno: error.lineno,
       colno: error.colno
-    })
+    } )
 
     var context = lines.join( '\n' )
 

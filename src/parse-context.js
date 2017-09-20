@@ -36,7 +36,7 @@ function parseContext ( opts ) {
   var minLeftPadding = String( j ).trim().length
 
   var parsedLines = []
-  for (; i < j; i++) {
+  for ( ; i < j; i++ ) {
     var head = String( i + 1 ).trim() // line number column
     var body = lines[ i ] // line text content
 
@@ -44,7 +44,7 @@ function parseContext ( opts ) {
     var onTargetLine = ( i === ( lineno - 1 ) )
 
     // left pad
-    while ( head.length < minLeftPadding ) head = (' ' + head )
+    while ( head.length < minLeftPadding ) head = ( ' ' + head )
 
     // target line
     if ( onTargetLine ) {
@@ -74,10 +74,10 @@ function parseContext ( opts ) {
     // draw an arrow pointing upward to column location
     if ( onTargetLine ) {
       var offset = '' // ^ pointer offset
-      for (var x = 0; x < colno; x++) {
+      for ( var x = 0; x < colno; x++ ) {
         offset += ' '
       }
-      var _head = String( j ).trim().split( /./ ).join(' ') + '   | '
+      var _head = String( j ).trim().split( /./ ).join( ' ' ) + '   | '
 
       if ( opts.prettify ) {
         parsedLines.push( _head + offset + colorify( '^', 'redBright' ) )

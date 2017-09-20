@@ -36,15 +36,15 @@ function transformToRelativePaths ( text, transformPath ) {
       } )
     }
 
-    urls = urls.filter(function (url) {
+    urls = urls.filter( function ( url ) {
       // filter out non-file paths
       try {
         return fs.existsSync( url.absolutePath )
         return true
-      } catch (err) {
+      } catch ( err ) {
         return false
       }
-    })
+    } )
 
     urls.forEach( function ( url ) {
       debug( 'trans match: ' + url.match )
@@ -62,7 +62,7 @@ function transformToRelativePaths ( text, transformPath ) {
 
     return text.split( /\s+/ ).join( ' ' )
   } else {
-    throw new Error( ' NOT IN NODE JS ================== ')
+    throw new Error( ' NOT IN NODE JS ================== ' )
     return text
   }
 }
