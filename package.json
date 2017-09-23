@@ -28,6 +28,7 @@
     "build:source": "browserify --node -s wooster -t [ babelify --presets [ es2015 ] ] src/version2.js -o dist/bundle.js",
     "uglify": "uglifyjs dist/bundle.js -cmo dist/bundle.min.js",
     "build": "npm run build:source && npm run uglify",
+    "wbuild": "(npm run build:source && npm run uglify) 2>&1 | wooster",
     "lint": "spacestandard --fix src/**/*.js",
     "test": "cd test && node test.js | tap-spec",
     "test:bundle": "cd test && TEST_SOURCE='../dist/bundle.min.js' node test.js | tap-spec"
