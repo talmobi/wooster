@@ -12,7 +12,7 @@ function parseContext ( opts ) {
 
   var lineno = opts.lineno || opts.line || opts.lin
   var colno = opts.colno || opts.column || opts.col
-  var filename = ( opts.url || opts.path || opts.filename || opts.filepath || opts.file || opts.uri || '[unknown source]')
+  var filename = ( opts.url || opts.path || opts.filename || opts.filepath || opts.file || opts.uri || '[unknown source]' )
 
   var
     rawSourceMap,
