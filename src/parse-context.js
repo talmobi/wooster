@@ -1,17 +1,69 @@
 var prettifyText = require( './prettify-text.js' )
-
 var colorify = require( './colorify.js' )
+
+var convert = require( 'convert-source-map' )
+var sourceMap = require( 'source-map' )
 
 function parseContext ( opts ) {
   // var url = opts.url
   // var message = opts.message
 
   var text = opts.text
-  var rawLines = text.split( '\n' )
-  var lines = rawLines
 
-  var lineno = opts.lineno
-  var colno = opts.colno
+  var lineno = opts.lineno || opts.line || opts.lin
+  var colno = opts.colno || opts.column || opts.col
+  var filename = ( opts.url || opts.path || opts.filename || opts.filepath || opts.file || opts.uri || '[unknown source]')
+
+  var
+    rawSourceMap,
+    sourceMapConsumer,
+    sourceText,
+    sourceOrigin,
+    usedSourceMap = false
+
+  try {
+    rawSourceMap = convert.fromSource( text )
+
+    if ( rawSourceMap ) rawSourceMap = rawSourceMap.toJSON()
+
+    if ( rawSourceMap ) {
+      sourceMapConsumer = new sourceMap.SourceMapConsumer( rawSourceMap )
+      sourceOrigin = sourceMapConsumer.originalPositionFor( {
+        line: lineno,
+        column: colno
+      } )
+      sourceText = sourceMapConsumer.sourceContentFor(
+        sourceOrigin.source
+      )
+    }
+  } catch ( err ) {
+    // ignore, didn't find source map support
+    console.log( 'warning: searching for a source map threw an error' )
+    console.log( err )
+  }
+
+  if ( rawSourceMap ) {
+    console.log( 'inline source maps found!' )
+  } else {
+    console.log( 'no inline source maps found.' )
+  }
+
+  if (
+    opts.enableSourceMaps === true &&
+    sourceText &&
+    sourceOrigin
+    // sourceOrigin.line >= 0 &&
+    // sourceOrigin.column >= 0
+  ) {
+    // use source maps instead
+    text = sourceText
+    lineno = sourceOrigin.line
+    colno = sourceOrigin.column
+    filename = sourceOrigin.source
+    usedSourceMap = true
+  }
+
+  var lines = text.split( '\n' )
 
   var i = Math.max( 0, lineno - 6 ) // first line
   var j = Math.min( lines.length - 1, i + 4 + 2 + 2 ) // last line
@@ -24,8 +76,7 @@ function parseContext ( opts ) {
     var slice = lines.slice( begin, end )
 
     var buffer = slice.join( '\n' )
-    var path = ( opts.url || opts.path || opts.filename || opts.filepath )
-    var prettyText = prettifyText( buffer, path )
+    var prettyText = prettifyText( buffer, filename )
     var prettyLines = prettyText.split( '\n' )
 
     prettyLines.forEach( function ( prettyLine, index ) {
@@ -87,7 +138,13 @@ function parseContext ( opts ) {
     }
   }
 
-  return parsedLines
+  return {
+    usedSourceMap: usedSourceMap,
+    text: parsedLines.join( '\n' ),
+    filename: filename,
+    lineno: lineno,
+    colno: colno
+  }
 }
 
 module.exports = parseContext

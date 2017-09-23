@@ -60,7 +60,7 @@ function _api ( text, callback ) {
     debug( 'pos: ' + error.lineno + ':' + error.colno )
     var filepath = error.path || path.resolve( error.url.match )
 
-    var lines = parseContext( {
+    var ctx = parseContext( {
       filename: filepath,
       prettify: opts.prettify,
       text: fs.readFileSync( filepath, { encoding: 'utf8' } ),
@@ -68,7 +68,7 @@ function _api ( text, callback ) {
       colno: error.colno
     } )
 
-    var context = lines.join( '\n' )
+    var context = ctx.text
 
     var description = error.message || '[ Unknown Error ]'
 
