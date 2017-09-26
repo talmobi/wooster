@@ -7960,7 +7960,7 @@ function _api(text, callback) {
       }) + ' ' + colorify(error.lineno, 'redBright') + ':' + colorify(error.colno, 'redBright')].join('\n');
     } else {}
 
-    output += '\n' + context;
+    output += '\n' + context + '\n';
 
     debug(output);
     returnValue = output;
