@@ -133,7 +133,7 @@ function _api ( text, callback ) {
     } else {
     }
 
-    output += '\n' + context
+    output += '\n' + context + '\n'
 
     debug( output )
     returnValue = output
