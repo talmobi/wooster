@@ -138,6 +138,7 @@ function _api ( text, callback ) {
     debug( output )
     returnValue = output
   } else {
+    // console.log( ' == RAW == ' )
     returnValue = raw
   }
 
