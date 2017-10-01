@@ -16,10 +16,15 @@ function debug ( msg ) {
 var removeContextFromText = require( './remove-context-from-text.js' )
 
 function parsePosition ( pos ) {
+  if ( !pos ) return undefined
+
   // log('  line positioning string detected: ' + pos)
   var split = pos.split( /\D+/ )
     .filter( function ( s ) { return s } )
   debug( '  parsed positioning string: ' + split.toString() )
+
+  if ( !split || split.length < 2 ) return undefined
+
   return {
     lineno: /\d+/.exec( split[ 0 ] )[ 0 ],
     colno: /\d+/.exec( split[ 1 ] )[ 0 ]
@@ -243,7 +248,16 @@ function findError ( text ) {
             return ( l.indexOf( '^' ) >= 0 )
           } )[ 0 ]
 
-        var lineNumber = bestUrl.line.split( ':' )[ 1 ].replace( /\D/g, '' )
+        // console.log( bestUrl.line )
+
+        var lineNumberSplit = bestUrl.line.split( ':' )
+
+        // windows url's can start with a :, so grab the last one
+        var lineNumber = lineNumberSplit[ lineNumberSplit.length - 1 ]
+          .replace( /\D/g, '' ) // only the digits
+
+        // console.log( 'lineNumber:' + lineNumber )
+
         var column = line.indexOf( '^' )
 
         matches.push( {
@@ -277,6 +291,16 @@ function findError ( text ) {
   }
 
   var bestMatch = r[ 0 ].match
+
+  // console.log( ' == bestMatch == ' )
+  // console.log( bestMatch )
+  // console.log( r[ 0 ].weight )
+
+  if ( !bestMatch ) {
+    debug( ' >>>>> bestMatch was falsy -- consider as no error found' )
+    return false
+  }
+
   debug( 'pos bestMatch: ' + bestMatch )
 
   var _likelyErrorDescription
@@ -298,6 +322,11 @@ function findError ( text ) {
   debug( '   > most likely error description: ' + _likelyErrorDescription )
 
   var pos = parsePosition( bestMatch )
+  if ( !pos ) {
+    debug( ' >>>>> pos was falsy -- consider as no error found' )
+    return false
+  }
+
   return {
     message: _likelyErrorDescription,
     url: bestUrl,
