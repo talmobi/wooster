@@ -37,7 +37,10 @@ process.on('exit', function () {
 })
 
 function exec (cmd, args, callback) {
-  var spawn = childProcess.spawn(cmd, args)
+  // { shell: true } fixed windows errors where there are spaces
+  // in both command and argument, see:
+  // https://github.com/nodejs/node/issues/736://github.com/nodejs/node/issues/7367
+  var spawn = childProcess.spawn(cmd, args, { shell: true })
   _spawns.push(spawn)
 
   var handler = createIOHandler(function (data) {
@@ -56,7 +59,7 @@ function createIOHandler (callback) {
   var _timeout = setTimeout(function () {
     _done = true
     callback(_buffer)
-  }, 3000)
+  }, 3000 )
 
   return function handleIO (chunk) {
     // console.log('callbacking')
@@ -64,8 +67,9 @@ function createIOHandler (callback) {
     _buffer += chunk.toString('utf8')
     clearTimeout(_timeout)
     _timeout = setTimeout(function () {
+      _done = true
       callback(_buffer)
-    }, 1000)
+    }, 1000 )
   }
 }
 
@@ -99,7 +103,10 @@ test('test successful stylus cli', function (t) {
       )
 
       // run the bundled javascript
-      exec('../node_modules/.bin/csslint', ['bundles/stylus.bundle.css'], function (buffer) {
+      exec(
+        path.join( '..', 'node_modules', '.bin', 'csslint' ),
+        [ path.join( 'bundles', 'stylus.bundle.css' ) ],
+        function (buffer) {
         t.ok(
           buffer.toLowerCase().indexOf('no errors in') > 0,
           'no errors found in the built css bundle as expected')
@@ -141,7 +148,7 @@ test('test error stylus cli', function (t) {
 test('test successful less cli', function (t) {
   t.plan(3)
 
-  exec('npm', 'run build:rollup --silent'.split(' '), function (buffer) {
+  exec('npm', 'run build:less --silent'.split(' '), function (buffer) {
     t.ok(
       normalize(buffer).indexOf('error') === -1,
       'no errors on the terminal as expected'
@@ -155,7 +162,11 @@ test('test successful less cli', function (t) {
       )
 
       // run the bundled javascript
-      exec('../node_modules/.bin/csslint', ['bundles/less.bundle.css'], function (buffer) {
+      // exec('../node_modules/.bin/csslint', ['bundles/less.bundle.css'], function (buffer) {
+      exec(
+        path.join( '..', 'node_modules', '.bin', 'csslint' ),
+        [ path.join( 'bundles', 'less.bundle.css' ) ],
+        function (buffer) {
         t.ok(
           buffer.toLowerCase().indexOf('no errors in') > 0,
           'no errors found in the built css bundle as expected')
@@ -213,7 +224,11 @@ test('test successful rollup cli', function (t) {
       )
 
       // run the bundled javascript
-      exec('node', ['bundles/rollup.bundle.js'], function (buffer) {
+      // exec('node', ['bundles/rollup.bundle.js'], function (buffer) {
+      exec(
+        'node',
+        [ path.join( 'bundles', 'rollup.bundle.js' ) ],
+        function (buffer) {
         t.equal(buffer.trim(), 'giraffe', 'expected output')
 
         // on successful build, do nothing and print raw input as output
@@ -272,7 +287,11 @@ test('test successful browserify cli', function (t) {
       )
 
       // run the bundled javascript
-      exec('node', ['bundles/browserify.bundle.js'], function (buffer) {
+      // exec('node', ['bundles/browserify.bundle.js'], function (buffer) {
+      exec(
+        'node',
+        [ path.join( 'bundles', 'browserify.bundle.js' ) ],
+        function (buffer) {
         t.equal(buffer.trim(), 'giraffe', 'expected output')
 
         // on successful build, do nothing and print raw input as output
@@ -331,7 +350,11 @@ test('test successful browserify cli with babelify transform', function (t) {
       )
 
       // run the bundled javascript
-      exec('node', ['bundles/browserify-babelify.bundle.js'], function (buffer) {
+      // exec('node', ['bundles/browserify-babelify.bundle.js'], function (buffer) {
+      exec(
+        'node',
+        [ path.join( 'bundles', 'browserify-babelify.bundle.js' ) ],
+        function (buffer) {
         t.equal(buffer.trim(), 'giraffe', 'expected output')
 
         // on successful build, do nothing and print raw input as output
@@ -390,7 +413,11 @@ test('test successful webpack cli', function (t) {
       )
 
       // run the bundled javascript
-      exec('node', ['bundles/webpack.bundle.js'], function (buffer) {
+      // exec('node', ['bundles/webpack.bundle.js'], function (buffer) {
+      exec(
+        'node',
+        [ path.join( 'bundles', 'webpack.bundle.js' ) ],
+        function (buffer) {
         t.equal(buffer.trim(), 'giraffe', 'expected output')
 
         // on successful build, do nothing and print raw input as output
