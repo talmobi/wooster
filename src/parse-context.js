@@ -18,12 +18,11 @@ function parseContext ( opts ) {
   var colno = opts.colno || opts.column || opts.col
   var filename = ( opts.url || opts.path || opts.filename || opts.filepath || opts.file || opts.uri || '[unknown source]' )
 
-  var
-    rawSourceMap,
-    sourceMapConsumer,
-    sourceText,
-    sourceOrigin,
-    usedSourceMap = false
+  var rawSourceMap
+  var sourceMapConsumer
+  var sourceText
+  var sourceOrigin
+  var usedSourceMap = false
 
   try {
     rawSourceMap = convert.fromSource( text )

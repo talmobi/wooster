@@ -12,7 +12,9 @@ function shortenUrls ( url, length ) {
       var result = ''
       split.forEach( function ( fileName ) {
         if ( fileName ) {
-          var i, len = length
+          var i
+          var len = length
+
           if ( length > fileName.length ) len = fileName.length
           for ( i = 0; i < len; i++ ) {
             result += fileName[ i ]

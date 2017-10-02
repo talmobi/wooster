@@ -11,7 +11,7 @@ try {
   isNode = false
 }
 
-var colorify = require( './colorify.js' )
+// var colorify = require( './colorify.js' )
 
 function debug ( msg ) {
   // console.log( msg )
@@ -40,7 +40,6 @@ function transformToRelativePaths ( text, transformPath ) {
       // filter out non-file paths
       try {
         return fs.existsSync( url.absolutePath )
-        return true
       } catch ( err ) {
         return false
       }
@@ -63,7 +62,6 @@ function transformToRelativePaths ( text, transformPath ) {
     return text.split( /\s+/ ).join( ' ' )
   } else {
     throw new Error( ' NOT IN NODE JS ================== ' )
-    return text
   }
 }
 

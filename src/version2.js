@@ -119,7 +119,7 @@ function _api ( text, callback ) {
     }
 
     if ( opts.prettify ) {
-      var output = [
+      output = [
         colorify( '>> wooster output <<', 'blackBright' ),
         description,
         '',

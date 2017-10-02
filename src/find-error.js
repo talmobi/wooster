@@ -22,7 +22,7 @@ function stripAnsi ( text ) {
 }
 
 function grabAlphabet ( text ) {
-  return text.replace( /[^a-zA-Z]/g, '')
+  return text.replace( /[^a-zA-Z]/g, '' )
 }
 
 function getUrlMatchWeight ( line, match ) {
