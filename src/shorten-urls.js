@@ -3,6 +3,24 @@
 function shortenUrls ( url, length ) {
   length = length || 3
 
+  if ( length <= 0 ) length = 3 // defaults to 3
+
+  // cut off any redundant tails
+  while (
+    ( url ) &&
+    ( url.length > 1 ) &&
+    (
+     ( url[ url.length - 1 ] === '.'  &&
+       ( url[ url.length - 2 ] === '/' || url[ url.length - 2 ] === '.' )
+     ) ||
+     ( url[ url.length - 1 ] === '/' )
+    )
+  ) {
+    url = url.slice( 0, -1 )
+  }
+
+  if ( !url ) return url
+
   var words = url.split( /\s+/ )
   words = words.map( function ( word ) {
     if ( word.indexOf( '.' ) >= 0 || word.indexOf( '/' ) >= 0 ) {
@@ -30,10 +48,11 @@ function shortenUrls ( url, length ) {
     }
   } )
 
-  return words.join( ' ' )
-  // log(
-  //   ' ' + clc.redBright( words.join(' ') )
-  // )
+  if ( url[ 0 ] === '/' ) {
+    return ( '/' + words.join( ' ' ) )
+  } else {
+    return words.join( ' ' )
+  }
 }
 
 module.exports = shortenUrls
