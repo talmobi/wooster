@@ -1,26 +1,15 @@
-var fs, path
-var isNode = false
-
-try {
-  var _require = require
-  fs = _require( 'fs' )
-  path = _require( 'path' )
-  isNode = true
-} catch ( err ) {
-  isNode = false
-}
-
-// console.log( ' == isNode: ' + isNode + ' == ' )
+var fs = require( 'fs' )
+var path = require( 'path' )
 
 function debug ( msg ) {
   // console.log( msg )
 }
 
 // https://github.com/chalk/ansi-regex
-var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
+var ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
 
 function stripAnsi ( str ) {
-  return str.replace( ansiRegex, '' )
+  return str.replace( ANSI_REGEX, '' )
 }
 
 var colorify = require( './colorify.js' )
@@ -31,21 +20,27 @@ var shortenUrls = require( './shorten-urls.js' )
 var prettifyText = require( './prettify-text.js' )
 var parseContext = require( './parse-context.js' )
 
-function _api ( text, callback ) {
-  if ( !isNode ) {
-    throw new Error( 'This function cannot be run in the Browser.' )
+var defaultOpts = {
+  prettify: true,
+  relative: true,
+  shorten: true
+}
+
+function _api ( text, opts, callback ) {
+  if ( typeof opts === 'function' ) {
+    callback = opts
+    opts = undefined
   }
 
-  var opts = {
-    prettify: true,
-    relative: true,
-    shorten: true
-  }
+  opts = Object.assign(
+    defaultOpts,
+    opts || {}
+  )
 
   var raw = text
   var returnValue = raw
 
-  text = stripAnsi( text )
+  text = ( '\n' + stripAnsi( text ) + '\n' )
 
   debug( ' === text === ' )
   debug( text )
@@ -72,68 +67,25 @@ function _api ( text, callback ) {
 
     var description = error.message || '[ Unknown Error ]'
 
-    // highlight "error" words
-    if ( opts.prettify ) {
-      var lineLength = 0
-      var output = ' '
-      var words = description.split( /\s+/ )
+    description = _parseDescription( description, opts )
 
-      words.forEach( function ( word ) {
-        var raw = word
-        var rawLow = raw.toLowerCase()
-        if ( rawLow.indexOf( 'error' ) !== -1 ) {
-          word = colorify( raw, 'red' )
-        }
-
-        if (
-          rawLow.indexOf( '/' ) !== -1 ||
-          rawLow.indexOf( '.' ) !== -1
-        ) {
-          if ( opts.relative ) {
-            word = transformToRelativePaths( raw, function ( path ) {
-              if ( opts.prettify ) {
-                return colorify( path, 'magentaBright' )
-              } else {
-                return path
-              }
-            } )
-          }
-
-          if ( opts.shorten ) {
-            word = shortenUrls( word )
-          }
-        }
-
-        output += word.trim()
-
-        lineLength += raw.length
-        if ( lineLength > 70 ) {
-          lineLength = 0
-          output += '\n '
-        }
-
-        output += ' '
-      } )
-
-      description = ' ' + output.trim()
-    }
-
-    if ( opts.prettify ) {
-      output = [
-        colorify( '>> wooster output <<', 'blackBright' ),
-        description,
-        '',
-        ' @ ' +
-        transformToRelativePaths( filepath, function ( path ) {
-          return colorify( path, 'magentaBright' )
-        } ) +
-        ' ' + colorify( error.lineno, 'redBright' ) +
-        ':' + colorify( error.colno, 'redBright' )
-      ].join( '\n' )
-    } else {
-    }
+    var output = [
+      colorify( '>> wooster output <<', 'blackBright' ),
+      description,
+      '',
+      ' @ ' +
+      transformToRelativePaths( filepath, function ( path ) {
+        return colorify( path, 'magentaBright' )
+      } ) +
+      ' ' + colorify( error.lineno, 'redBright' ) +
+      ':' + colorify( error.colno, 'redBright' )
+    ].join( '\n' )
 
     output += '\n' + context + '\n'
+
+    if ( !opts.prettify ) {
+      output = stripAnsi( output )
+    }
 
     debug( output )
     returnValue = output
@@ -147,6 +99,49 @@ function _api ( text, callback ) {
   }
 
   return returnValue
+}
+
+function _parseDescription ( description, opts ) {
+  var lineLength = 0
+  var output = ' '
+  var words = description.split( /\s+/ )
+
+  words.forEach( function ( word ) {
+    var raw = word
+    var rawLow = raw.toLowerCase()
+    if ( rawLow.indexOf( 'error' ) !== -1 ) {
+      word = colorify( raw, 'red' )
+    }
+
+    if (
+      rawLow.indexOf( '/' ) !== -1 ||
+      rawLow.indexOf( '.' ) !== -1
+    ) {
+      if ( opts.relative ) {
+        word = transformToRelativePaths( raw, function ( path ) {
+          return colorify( path, 'magentaBright' )
+        } )
+      }
+
+      if ( opts.shorten ) {
+        word = shortenUrls( word )
+      }
+    }
+
+    output += word.trim()
+
+    lineLength += raw.length
+    if ( lineLength > 70 ) {
+      lineLength = 0
+      output += '\n '
+    }
+
+    output += ' '
+  } )
+
+  description = ' ' + output.trim()
+
+  return description
 }
 
 _api.prettifyText = prettifyText
