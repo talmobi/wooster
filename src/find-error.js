@@ -15,6 +15,38 @@ function debug ( msg ) {
 
 var removeContextFromText = require( './remove-context-from-text.js' )
 
+var ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
+function stripAnsi ( text ) {
+  // https://github.com/chalk/ansi-regex
+  return text.replace( ANSI_REGEX, '' )
+}
+
+function grabAlphabet ( text ) {
+  return text.replace( /[^a-zA-Z]/g, '')
+}
+
+function getUrlMatchWeight ( line, match ) {
+  var weight = 0
+
+  line = grabAlphabet( line )
+  match = grabAlphabet( match )
+
+  var a = line
+  var b = match
+
+  if ( a.length < match.length ) {
+    var t = a
+    a = b
+    b = t
+    weight -= 10
+  }
+
+  if ( a.indexOf( b ) !== -1 ) weight += 35
+  if ( a.toLowerCase().indexOf( b.toLowerCase() ) !== -1 ) weight += 100
+
+  return weight
+}
+
 function parsePosition ( pos ) {
   if ( !pos ) return undefined
 
@@ -33,6 +65,7 @@ function parsePosition ( pos ) {
 
 function findError ( text ) {
   text = removeContextFromText( text )
+  text = stripAnsi( text )
 
   if ( text.toLowerCase().indexOf( 'error' ) === -1 ) {
     return false
@@ -190,33 +223,41 @@ function findError ( text ) {
     debug( ' position word boundary: ' + word + ', match: ' + match[ 0 ] )
     // if matched word boundary contains '/' (path seperators) decrease weight
     // this avoids parsing path names as error positions (in case a path name happens to match)
-    if ( word && word.indexOf( '/' ) !== -1 ) weight -= 1
+    if ( word && word.indexOf( '/' ) !== -1 ) weight -= 100
+    if ( match[ 0 ].indexOf( '{' ) !== -1 ) weight -= 5
+    if ( match[ 0 ].indexOf( '}' ) !== -1 ) weight -= 5
 
     // avoid parsing lines with node_modules in them (most likely stack traces..)
-    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 1
-    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 0.5
+    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 100
+    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 50
 
     // if current line contains 'error' increase weight
-    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 1
-    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 1
-    if ( line.indexOf( 'Error' ) !== -1 ) weight += 1
+    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 100
+    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 100
+    if ( line.indexOf( 'Error' ) !== -1 ) weight += 10
+
+    if ( line.toLowerCase().indexOf( 'expected' ) !== -1 ) weight += 1
+    if ( line.toLowerCase().indexOf( 'unexpected' ) !== -1 ) weight += 3
+    if ( line.toLowerCase().indexOf( 'token' ) !== -1 ) weight += 1
+    if ( line.toLowerCase().indexOf( 'parse' ) !== -1 ) weight += 1
 
     // decrease weight if match has letters in them
-    if ( line.toLowerCase().match( /[a-z]/ ) ) weight -= 0.1
+    if ( grabAlphabet( match[ 0 ] ).length > 1 ) weight -= 10
 
     // if prev line contains 'error' increase weight a little bit
     var prevLine = _lines[ lineNumber - 1 ]
     if ( typeof prevLine === 'string' ) {
-      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 0.50
+      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 50
     }
 
     // if next line contains 'error' increase weight a tiny bit
     var nextLine = _lines[ lineNumber + 1 ]
     if ( typeof nextLine === 'string' ) {
-      if ( nextLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 0.25
+      if ( nextLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 25
     }
 
-    if ( line.indexOf( bestUrl.match ) !== -1 ) weight++
+    // if ( line.indexOf( bestUrl.match ) !== -1 ) weight += 10
+    weight += getUrlMatchWeight( line, bestUrl.match )
 
     debug( ' position found: ' + match[ 0 ] + ', weight: ' + weight )
     debug( '  line: ' + line )
