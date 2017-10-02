@@ -1,4 +1,7 @@
-node_modules
+node_modules/
+coverage/
+.nyc_output/
+nyc_output/
 
 # vim temp files
 *.sw?
@@ -7,3 +10,4 @@ node_modules
 *.DS_Store
 
 test/bundles
+test/stage/*
