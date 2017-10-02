@@ -4,6 +4,10 @@ var colorify = require( './colorify.js' )
 var convert = require( 'convert-source-map' )
 var sourceMap = require( 'source-map' )
 
+function debug ( msg ) {
+  // console.log( msg )
+}
+
 function parseContext ( opts ) {
   // var url = opts.url
   // var message = opts.message
@@ -38,14 +42,14 @@ function parseContext ( opts ) {
     }
   } catch ( err ) {
     // ignore, didn't find source map support
-    console.log( 'warning: searching for a source map threw an error' )
-    console.log( err )
+    debug( 'warning: searching for a source map threw an error' )
+    debug( err )
   }
 
   if ( rawSourceMap ) {
-    console.log( 'inline source maps found!' )
+    debug( 'inline source maps found!' )
   } else {
-    console.log( 'no inline source maps found.' )
+    debug( 'no inline source maps found.' )
   }
 
   if (
