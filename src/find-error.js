@@ -64,6 +64,10 @@ function parsePosition ( pos ) {
 }
 
 function findError ( text ) {
+  // console.log( ' == RAW ==' )
+  // console.log( text )
+  // console.log( ' ==    ==' )
+
   text = removeContextFromText( text )
   text = stripAnsi( text )
 
