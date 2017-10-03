@@ -176,10 +176,21 @@ function findError ( text ) {
 
   var bestUrl
   var bestResolvedPath
+
   for ( var i = 0; i < urls.length; i++ ) {
     var url = urls[ i ]
     var resolvedPath = path.resolve( url.match )
-    var exists = fs.existsSync( resolvedPath )
+
+    var exists = false
+
+    try {
+      fs.statSync( resolvedPath )
+      exists = true
+    } catch ( err ) {
+      /* ignore */
+    }
+
+    debug( 'checking url exists: ' + url.match + ' - ' + exists )
     if ( exists ) {
       bestResolvedPath = resolvedPath
       bestUrl = url
