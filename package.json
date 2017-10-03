@@ -45,6 +45,7 @@
     "csslint": "~1.0.5",
     "less": "~2.7.2",
     "node-sass": "~4.5.3",
+    "npm-which": "~3.0.1",
     "rollup": "~0.41.6",
     "spacestandard": "0.0.6",
     "stylus": "~0.54.5",
