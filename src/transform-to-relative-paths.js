@@ -39,6 +39,9 @@ function transformToRelativePaths ( text, transformPath ) {
     // replace matches path with a transformed path.relative path
     // var relativePath = './' + path.relative(__dirname, url.absolutePath)
     var relativePath = './' + path.relative( process.cwd(), url.absolutePath )
+
+    relativePath = relativePath.split( path.sep ).join( '/' )
+
     debug( 'trans relpath: ' + relativePath )
     text = text
     .split( url.match )
