@@ -44,7 +44,7 @@ function createIOHandler ( callback ) {
       console.log( 'IOHandler timed out' )
       callback( _buffer )
     }
-  }, 15000 )
+  }, 1000 * 10 )
 
   return function handleIO ( chunk ) {
     if ( _done ) return undefined
@@ -63,7 +63,7 @@ function createIOHandler ( callback ) {
 
 function execWait ( file, cmd, args, callback ) {
   var startTime = Date.now()
-  var limit = 15000
+  var limit = 1000 * 15
 
   attempt()
 
