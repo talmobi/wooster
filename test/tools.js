@@ -13,17 +13,21 @@ process.on( 'exit', function () {
 } )
 
 function exec ( cmd, args, callback ) {
+  // console.log( 'running command: ' + cmd + ' ' + args.join( ' ') )
+
   // { shell: true } fixed windows errors where there are spaces
   // in both command and argument, see:
   // https://github.com/nodejs/node/issues/736://github.com/nodejs/node/issues/7367
-  var spawn = childProcess.spawn(cmd, args, { shell: true })
-  _spawns.push(spawn)
+  var spawn = childProcess.spawn( cmd, args, { shell: true } )
+  _spawns.push( spawn )
 
-  var handler = createIOHandler(function (data) {
-    // console.log('killing spawn and calling callback')
-    spawn.kill()
-    callback(data)
-  })
+  var handler = createIOHandler( function ( data ) {
+    try {
+      spawn.kill()
+    } catch ( err ) { /* ignore */ }
+
+    callback( data )
+  } )
 
   spawn.stdout.on( 'data', handler )
   spawn.stderr.on( 'data', handler )
@@ -34,21 +38,59 @@ function createIOHandler ( callback ) {
   var _buffer = ''
 
   var _timeout = setTimeout( function () {
-    _done = true
-    // console.log( 'test timed out' )
-    callback( _buffer )
-  }, 5000 )
+    clearTimeout( _timeout )
+    if ( !_done ) {
+      _done = true
+      console.log( 'IOHandler timed out' )
+      callback( _buffer )
+    }
+  }, 15000 )
 
   return function handleIO ( chunk ) {
-    // console.log('callbacking')
     if ( _done ) return undefined
+
     _buffer += chunk.toString( 'utf8' )
 
-    clearTimeout( _timeout )
-    _timeout = setTimeout( function () {
-      _done = true
-      callback( _buffer )
-    }, 1000 )
+    if ( _buffer.trim().length > 0 ) {
+      clearTimeout( _timeout )
+      _timeout = setTimeout( function () {
+        _done = true
+        callback( _buffer )
+      }, 1000 )
+    }
+  }
+}
+
+function execWait ( file, cmd, args, callback ) {
+  var startTime = Date.now()
+  var limit = 15000
+
+  attempt()
+
+  function attempt () {
+    // console.log( 'attempting: ' + file )
+    try {
+      var stats = fs.statSync( file )
+
+      if ( stats.size > 0 ) {
+        // console.log( 'attempt SUCCESS: ' + file )
+        finish()
+      }
+    } catch ( err ) {
+
+      var now = Date.now()
+      var delta = ( now - startTime )
+      if ( delta < limit ) {
+        setTimeout( attempt, 500 )
+      } else {
+        console.log( 'attempt TIMEOUT: ' + file )
+        finish()
+      }
+    }
+  }
+
+  function finish () {
+    exec( cmd, args, callback )
   }
 }
 
@@ -89,6 +131,7 @@ function UID () {
 
 module.exports = {
   exec: exec,
+  execWait: execWait,
   normalize: normalize,
   clean: clean,
   UID: UID
