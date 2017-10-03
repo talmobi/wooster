@@ -17,7 +17,7 @@
     "wbuild": "(npm run build:source && npm run uglify) 2>&1 | wooster",
     "lint": "spacestandard --fix src/**/*.js",
     "test:bundle": "cd test && TEST_SOURCE='../dist/bundle.min.js' tap test-*.js",
-    "test": "cd test && tap test-*.js --coverage"
+    "test": "cd test && tap test-*.js --coverage --jobs=10"
   },
   "keywords": [
     "wooster"
