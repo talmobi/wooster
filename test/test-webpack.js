@@ -16,10 +16,13 @@ if ( typeof process.env.TEST_SOURCE === 'string' ) {
   // wooster = require( '../dist/bundle.min.js' )
 }
 
-var webpackBinPath = path.join(
-  __dirname,
-  '../node_modules/.bin/webpack'
-)
+var which = require( 'npm-which' )( __dirname )
+var webpackBinPath = which.sync( 'webpack' )
+
+// var webpackBinPath = path.join(
+//   __dirname,
+//   '../node_modules/.bin/webpack'
+// )
 
 tap.test( 'successful webpack build', function ( t ) {
   var sourcePath = path.join(

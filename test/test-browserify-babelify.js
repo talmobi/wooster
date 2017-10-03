@@ -16,10 +16,13 @@ if ( typeof process.env.TEST_SOURCE === 'string' ) {
   // wooster = require( '../dist/bundle.min.js' )
 }
 
-var browserifyBinPath = path.join(
-  __dirname,
-  '../node_modules/.bin/browserify'
-)
+var which = require( 'npm-which' )( __dirname )
+var browserifyBinPath = which.sync( 'browserify' )
+
+// var browserifyBinPath = path.join(
+//   __dirname,
+//   '../node_modules/.bin/browserify'
+// )
 
 tap.test( 'successful browserify ( babelify ) build', function ( t ) {
   var sourcePath = path.join(
@@ -58,7 +61,8 @@ tap.test( 'successful browserify ( babelify ) build', function ( t ) {
         )
 
         // run the bundle and get expected output
-        tools.exec(
+        tools.execWait(
+          targetPath,
           'node',
           [ targetPath ],
           function ( buffer ) {
@@ -91,7 +95,7 @@ tap.test( 'error browserify ( babelify ) build', function ( t ) {
     'browserify-babelify-error[' + tools.UID() + ']-build.js'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'
@@ -101,6 +105,10 @@ tap.test( 'error browserify ( babelify ) build', function ( t ) {
     sourcePath,
     targetPath,
     function ( data ) {
+      // console.log( ' == DATA == ')
+      // console.log( data )
+      // console.log( ' ==  ==  == ')
+
       t.notEqual(
         tools.normalize( data ).indexOf( 'error' ),
         -1,
@@ -139,13 +147,10 @@ tap.test( 'error browserify ( babelify ) build', function ( t ) {
 function build ( sourcePath, targetPath, callback ) {
   tools.exec(
     browserifyBinPath,
-    [
-      '-t',
-      '[ babelify --presets [ es2015 ] ]',
-      sourcePath,
-      '-o',
-      targetPath
-    ],
-    callback
+    '-t [ babelify --presets [ es2015 ] ] $sp -o $tp'
+    .replace( '$sp', sourcePath )
+    .replace( '$tp', targetPath )
+    .split( ' ' )
+    , callback
   )
 }

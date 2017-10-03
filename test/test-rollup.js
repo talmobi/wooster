@@ -16,10 +16,13 @@ if ( typeof process.env.TEST_SOURCE === 'string' ) {
   // wooster = require( '../dist/bundle.min.js' )
 }
 
-var rollupBinPath = path.join(
-  __dirname,
-  '../node_modules/.bin/rollup'
-)
+var which = require( 'npm-which' )( __dirname )
+var rollupBinPath = which.sync( 'rollup' )
+
+// var rollupBinPath = path.join(
+//   __dirname,
+//   '../node_modules/.bin/rollup'
+// )
 
 tap.test( 'successful rollup build', function ( t ) {
   var sourcePath = path.join(

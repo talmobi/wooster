@@ -16,10 +16,13 @@ if ( typeof process.env.TEST_SOURCE === 'string' ) {
   // wooster = require( '../dist/bundle.min.js' )
 }
 
-var lessBinPath = path.join(
-  __dirname,
-  '../node_modules/.bin/lessc'
-)
+var which = require( 'npm-which' )( __dirname )
+var lessBinPath = which.sync( 'lessc' )
+
+// var lessBinPath = path.join(
+//   __dirname,
+//   '../node_modules/.bin/lessc'
+// )
 
 tap.test( 'successful less build', function ( t ) {
   var sourcePath = path.join(
@@ -59,10 +62,7 @@ tap.test( 'successful less build', function ( t ) {
 
         // run the bundle and get expected output
         tools.exec(
-          path.join(
-            __dirname,
-            '../node_modules/.bin/csslint'
-          ),
+          which.sync( 'csslint' ),
           [ targetPath ],
           function ( buffer ) {
             t.ok(

@@ -16,10 +16,13 @@ if ( typeof process.env.TEST_SOURCE === 'string' ) {
   // wooster = require( '../dist/bundle.min.js' )
 }
 
-var sassBinPath = path.join(
-  __dirname,
-  '../node_modules/.bin/node-sass'
-)
+var which = require( 'npm-which' )( __dirname )
+var sassBinPath = which.sync( 'node-sass' )
+
+// var sassBinPath = path.join(
+//   __dirname,
+//   '../node_modules/.bin/node-sass'
+// )
 
 tap.test( 'successful sass build', function ( t ) {
   var sourcePath = path.join(
@@ -59,10 +62,7 @@ tap.test( 'successful sass build', function ( t ) {
 
         // run the bundle and get expected output
         tools.exec(
-          path.join(
-            __dirname,
-            '../node_modules/.bin/csslint'
-          ),
+          which.sync( 'csslint' ),
           [ targetPath ],
           function ( buffer ) {
             t.ok(

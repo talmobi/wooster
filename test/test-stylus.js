@@ -16,10 +16,13 @@ if ( typeof process.env.TEST_SOURCE === 'string' ) {
   // wooster = require( '../dist/bundle.min.js' )
 }
 
-var stylusBinPath = path.join(
-  __dirname,
-  '../node_modules/.bin/stylus'
-)
+var which = require( 'npm-which' )( __dirname )
+var stylusBinPath = which.sync( 'stylus' )
+
+// var stylusBinPath = path.join(
+//   __dirname,
+//   '../node_modules/.bin/stylus'
+// )
 
 tap.test( 'successful stylus build', function ( t ) {
   var sourcePath = path.join(
@@ -59,10 +62,7 @@ tap.test( 'successful stylus build', function ( t ) {
 
         // run the bundle and get expected output
         tools.exec(
-          path.join(
-            __dirname,
-            '../node_modules/.bin/csslint'
-          ),
+          which.sync( 'csslint' ),
           [ targetPath ],
           function ( buffer ) {
             t.ok(
