@@ -16,9 +16,15 @@ if ( typeof process.env.TEST_SOURCE === 'string' ) {
   // wooster = require( '../dist/bundle.min.js' )
 }
 
+// '/Users/mollie/code/wooster/test/src/main-error.js:1',
+var sourcePath = path.join(
+  __dirname,
+  'src/main-error.js'
+)
+
 var buffer = [
   '',
-  '/Users/mollie/code/wooster/test/src/main-error.js:1',
+  '$absolutePath:1'.replace( '$absolutePath', sourcePath ),
   'var text = \'giraffe\':',
   '                    ^',
   'ParseError: Unexpected token'
