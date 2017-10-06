@@ -2,7 +2,7 @@ var path = require( 'path' )
 
 var tools = require( './tools.js' )
 
-var tap = require( 'tap' )
+var test = require( 'tape' )
 
 var wooster
 
@@ -24,7 +24,7 @@ var sassBinPath = which.sync( 'node-sass' )
 //   '../node_modules/.bin/node-sass'
 // )
 
-tap.test( 'successful sass build', function ( t ) {
+test( 'successful sass build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -37,7 +37,7 @@ tap.test( 'successful sass build', function ( t ) {
     'sass[' + tools.UID() + ']-bundle.css'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'
@@ -84,7 +84,7 @@ tap.test( 'successful sass build', function ( t ) {
   )
 } )
 
-tap.test( 'error sass build', function ( t ) {
+test( 'error sass build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -97,7 +97,7 @@ tap.test( 'error sass build', function ( t ) {
     'sass-error[' + tools.UID() + ']-bundle.css'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'

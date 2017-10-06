@@ -2,7 +2,7 @@ var path = require( 'path' )
 
 var tools = require( './tools.js' )
 
-var tap = require( 'tap' )
+var test = require( 'tape' )
 
 var wooster
 
@@ -24,7 +24,7 @@ var lessBinPath = which.sync( 'lessc' )
 //   '../node_modules/.bin/lessc'
 // )
 
-tap.test( 'successful less build', function ( t ) {
+test( 'successful less build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -37,7 +37,7 @@ tap.test( 'successful less build', function ( t ) {
     'less[' + tools.UID() + ']-bundle.css'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'
@@ -84,7 +84,7 @@ tap.test( 'successful less build', function ( t ) {
   )
 } )
 
-tap.test( 'error less build', function ( t ) {
+test( 'error less build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -97,7 +97,7 @@ tap.test( 'error less build', function ( t ) {
     'less-error[' + tools.UID() + ']-bundle.css'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'

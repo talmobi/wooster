@@ -2,7 +2,7 @@ var path = require( 'path' )
 
 var tools = require( './tools.js' )
 
-var tap = require( 'tap' )
+var test = require( 'tape' )
 
 var wooster
 
@@ -24,7 +24,7 @@ var browserifyBinPath = which.sync( 'browserify' )
 //   '../node_modules/.bin/browserify'
 // )
 
-tap.test( 'successful browserify ( babelify ) build', function ( t ) {
+test( 'successful browserify ( babelify ) build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -37,7 +37,7 @@ tap.test( 'successful browserify ( babelify ) build', function ( t ) {
     'browserify-babelify[' + tools.UID() + ']-build.js'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'
@@ -82,7 +82,7 @@ tap.test( 'successful browserify ( babelify ) build', function ( t ) {
   )
 } )
 
-tap.test( 'error browserify ( babelify ) build', function ( t ) {
+test( 'error browserify ( babelify ) build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',

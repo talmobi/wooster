@@ -2,7 +2,7 @@ var path = require( 'path' )
 
 var tools = require( './tools.js' )
 
-var tap = require( 'tap' )
+var test = require( 'tape' )
 
 var wooster
 
@@ -24,7 +24,7 @@ var rollupBinPath = which.sync( 'rollup' )
 //   '../node_modules/.bin/rollup'
 // )
 
-tap.test( 'successful rollup build', function ( t ) {
+test( 'successful rollup build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -37,7 +37,7 @@ tap.test( 'successful rollup build', function ( t ) {
     'rollup[' + tools.UID() + ']-build.js'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'
@@ -81,7 +81,7 @@ tap.test( 'successful rollup build', function ( t ) {
   )
 } )
 
-tap.test( 'error rollup build', function ( t ) {
+test( 'error rollup build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -94,7 +94,7 @@ tap.test( 'error rollup build', function ( t ) {
     'rollup-error[' + tools.UID() + ']-build.js'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'

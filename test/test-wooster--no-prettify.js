@@ -2,7 +2,7 @@ var path = require( 'path' )
 
 var tools = require( './tools.js' )
 
-var tap = require( 'tap' )
+var test = require( 'tape' )
 
 var wooster
 
@@ -30,20 +30,24 @@ var buffer = [
   'ParseError: Unexpected token'
 ].join( '\n' )
 
-wooster( buffer, { prettify: false }, function ( text ) {
-  var expectedOutput = [
-    '>> wooster output <<',
-    'ParseError: Unexpected token',
-    '',
-    '@ ./src/main-error.js 1:20',
-    '> 1 | var text = \'giraffe\':',
-    '|                     ^',
-    '2 | console.log(text)'
-  ].join( '\n' )
+test( 'test no prettify', function ( t ) {
+  t.plan( 1 )
 
-  tap.equal(
-    tools.normalize( text ),
-    tools.normalize( expectedOutput ),
-    'wooster output was as expected'
-  )
+  wooster( buffer, { prettify: false }, function ( text ) {
+    var expectedOutput = [
+      '>> wooster output <<',
+      'ParseError: Unexpected token',
+      '',
+      '@ ./src/main-error.js 1:20',
+      '> 1 | var text = \'giraffe\':',
+      '|                     ^',
+      '2 | console.log(text)'
+    ].join( '\n' )
+
+    t.equal(
+      tools.normalize( text ),
+      tools.normalize( expectedOutput ),
+      'wooster output was as expected'
+    )
+  } )
 } )

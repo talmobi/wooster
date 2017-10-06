@@ -1,4 +1,4 @@
-var tap = require( 'tap' )
+var test = require( 'tape' )
 
 var shortenUrls = require( '../src/shorten-urls.js' )
 var clc = require( 'cli-color' )
@@ -66,9 +66,13 @@ var urls = [
   }
 ]
 
-urls.forEach( function ( pair ) {
-  tap.equal(
-    shortenUrls( pair.source, pair.length ),
-    pair.target
-  )
+test( 'test shorten-urls.js', function ( t ) {
+  t.plan( urls.length )
+
+  urls.forEach( function ( pair ) {
+    t.equal(
+      shortenUrls( pair.source, pair.length ),
+      pair.target
+    )
+  } )
 } )

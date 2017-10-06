@@ -2,7 +2,7 @@ var path = require( 'path' )
 
 var tools = require( './tools.js' )
 
-var tap = require( 'tap' )
+var test = require( 'tape' )
 
 var wooster
 
@@ -24,7 +24,7 @@ var stylusBinPath = which.sync( 'stylus' )
 //   '../node_modules/.bin/stylus'
 // )
 
-tap.test( 'successful stylus build', function ( t ) {
+test( 'successful stylus build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -37,7 +37,7 @@ tap.test( 'successful stylus build', function ( t ) {
     'stylus[' + tools.UID() + ']-bundle.css'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'
@@ -84,7 +84,7 @@ tap.test( 'successful stylus build', function ( t ) {
   )
 } )
 
-tap.test( 'error stylus build', function ( t ) {
+test( 'error stylus build', function ( t ) {
   var sourcePath = path.join(
     __dirname,
     'src',
@@ -97,7 +97,7 @@ tap.test( 'error stylus build', function ( t ) {
     'stylus-error[' + tools.UID() + ']-bundle.css'
   )
 
-  tap.equal(
+  t.equal(
     tools.clean( targetPath ),
     'is clean',
     'targetPath is clean before the test'
