@@ -17,8 +17,8 @@
     "wbuild": "(npm run build:source && npm run uglify) 2>&1 | wooster",
     "lint": "spacestandard --fix src/**/*.js",
     "test:bundle": "cd test && TEST_SOURCE='../dist/bundle.min.js' tap test-*.js --jobs=10",
-    "test": "cd test && tap test-*.js --jobs=10",
-    "coverage": "cd test && tap test-*.js --coverage --jobs=10"
+    "test": "cd test && tape test-*.js | faucet",
+    "coverage": "nyc npm test"
   },
   "keywords": [
     "wooster"
@@ -44,13 +44,15 @@
     "babelify": "https://registry.npmjs.org/babelify/-/babelify-7.3.0.tgz",
     "browserify": "~14.4.0",
     "csslint": "~1.0.5",
+    "faucet": "0.0.1",
     "less": "~2.7.2",
     "node-sass": "~4.5.3",
     "npm-which": "~3.0.1",
+    "nyc": "^11.2.1",
     "rollup": "~0.41.6",
     "spacestandard": "0.0.6",
     "stylus": "~0.54.5",
-    "tap": "~10.7.2",
+    "tape": "^4.8.0",
     "uglify-js": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.8.29.tgz",
     "webpack": "~2.6.1"
   }
