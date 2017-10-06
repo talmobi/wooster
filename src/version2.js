@@ -16,7 +16,7 @@ var colorify = require( './colorify.js' )
 
 var findError = require( './find-error.js' )
 var transformToRelativePaths = require( './transform-to-relative-paths.js' )
-var shortenUrls = require( './shorten-urls.js' )
+var pathShorten = require( './path-shorten.js' )
 var prettifyText = require( './prettify-text.js' )
 var parseContext = require( './parse-context.js' )
 
@@ -124,7 +124,7 @@ function _parseDescription ( description, opts ) {
       }
 
       if ( opts.shorten ) {
-        word = shortenUrls( word )
+        word = pathShorten( word )
       }
     }
 
@@ -146,7 +146,7 @@ function _parseDescription ( description, opts ) {
 
 _api.prettifyText = prettifyText
 _api.parseContext = parseContext
-_api.shortenUrls = shortenUrls
+_api.pathShorten = pathShorten
 _api.colorify = colorify
 
 module.exports = _api
