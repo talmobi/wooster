@@ -71,6 +71,11 @@ var urls = [
   },
   {
     length: 3,
+    source: require( 'os' ).homedir() + '/path/to/file/',
+    target: '~/pat/to/file'
+  },
+  {
+    length: 3,
     source: 'path/to/file/',
     target: 'pat/to/file'
   },
