@@ -26,9 +26,43 @@ var defaultOpts = {
   shorten: true
 }
 
+/*
+ *  Attempt to parse the error log with wooster.
+ *
+ *  wooster tries to find the source file of the error,
+ *  get its context and prettify the information into
+ *  a consice, easy to understand text output.
+ *
+ *  If it fails the output text is left unchanged from the
+ *  original input text.
+ */
 function _api ( text, opts, callback ) {
+  var result = text
+
+  var wp = parse( text, opts )
+  if ( wp ) {
+    result = wp.text
+  }
+
   if ( typeof opts === 'function' ) {
     callback = opts
+  }
+
+  if ( typeof callback === 'function' ) {
+    callback( result )
+  }
+
+  return result
+}
+
+/*
+ *  Same parsing as _api but return a richer object
+ *  with context, filename, line and column information.
+ *
+ *  returns false is the parsing fails
+ */
+function parse ( text, opts ) {
+  if ( typeof opts === 'function' ) {
     opts = undefined
   }
 
@@ -39,6 +73,7 @@ function _api ( text, opts, callback ) {
 
   var raw = text
   var returnValue = raw
+  var ctx
 
   text = ( '\n' + stripAnsi( text ) + '\n' )
 
@@ -55,7 +90,7 @@ function _api ( text, opts, callback ) {
     debug( 'pos: ' + error.lineno + ':' + error.colno )
     var filepath = error.path || path.resolve( error.url.match )
 
-    var ctx = parseContext( {
+    ctx = parseContext( {
       filename: filepath,
       prettify: opts.prettify,
       text: fs.readFileSync( filepath, { encoding: 'utf8' } ),
@@ -63,7 +98,7 @@ function _api ( text, opts, callback ) {
       colno: error.colno
     } )
 
-    var context = ctx.text
+    var context = ctx.context
 
     var description = error.message || '[ Unknown Error ]'
 
@@ -94,11 +129,19 @@ function _api ( text, opts, callback ) {
     returnValue = raw
   }
 
-  if ( typeof callback === 'function' ) {
-    callback( returnValue )
+  if ( returnValue === raw ) {
+    return false
   }
 
-  return returnValue
+  var robj = ( ctx || {} )
+
+  robj.text = returnValue
+
+  robj.toString = function () {
+    return returnValue
+  }
+
+  return robj
 }
 
 function _parseDescription ( description, opts ) {
@@ -143,6 +186,8 @@ function _parseDescription ( description, opts ) {
 
   return description
 }
+
+_api.parse = parse
 
 _api.prettifyText = prettifyText
 _api.parseContext = parseContext
