@@ -21,12 +21,28 @@ function exec ( cmd, args, callback ) {
   var spawn = childProcess.spawn( cmd, args, { shell: true } )
   _spawns.push( spawn )
 
+  var _data = ''
+
   var handler = createIOHandler( function ( data ) {
+    _data = data
+
     try {
       spawn.kill()
     } catch ( err ) { /* ignore */ }
+  } )
 
-    callback( data )
+  spawn.on( 'exit', function () {
+    var limit = ( Date.now() + 1000 )
+
+    attempt()
+    function attempt () {
+      var timedOut = ( Date.now() > limit )
+      if ( _data || timedOut ) {
+        callback( _data )
+      } else {
+        setTimeout( attempt, 100 )
+      }
+    }
   } )
 
   spawn.stdout.on( 'data', handler )
@@ -44,7 +60,7 @@ function createIOHandler ( callback ) {
       console.log( 'IOHandler timed out' )
       callback( _buffer )
     }
-  }, 1000 * 3 )
+  }, 1000 * 6 )
 
   return function handleIO ( chunk ) {
     if ( _done ) return undefined
