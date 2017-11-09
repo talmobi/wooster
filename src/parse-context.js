@@ -143,7 +143,7 @@ function parseContext ( opts ) {
 
   return {
     usedSourceMap: usedSourceMap,
-    text: parsedLines.join( '\n' ),
+    context: parsedLines.join( '\n' ),
     filename: filename,
     lineno: lineno,
     colno: colno
