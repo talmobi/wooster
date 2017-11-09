@@ -3,10 +3,15 @@
 var wooster = require('./dist/bundle.min.js')
 var buffer = ''
 var timeout
-var bufferClearTimeout
+var exitTimeout
+var hasErrors = false
 
-var argv = require('minimist')( process.argv.slice( 2 ) )
-var _timeout = argv.t || argv[ 'timeout' ]
+var argv = require('minimist')( process.argv.slice( 2 ), {
+  alias: {
+    'debounce': [ 'timeout', 't', 'd' ]
+  }
+} )
+var _timeout = argv.t || argv[ 'debounce' ]
 
 if ( _timeout == null ) _timeout = 100
 
@@ -25,15 +30,27 @@ process.stdin.on('data', function ( chunk ) {
     run()
   }
 
-  clearTimeout( bufferClearTimeout )
+  clearTimeout( exitTimeout )
 
   function run () {
-    clearConsole()
     var output = wooster( buffer )
 
-    bufferClearTimeout = setTimeout( function () {
-      buffer = ''
-    }, 1500 )
+    if ( output !== buffer ) {
+      hasErrors = true
+    }
+
+
+    exitTimeout = setTimeout( function () {
+      if ( hasErrors ) {
+        process.exit( 1 )
+      } else {
+        process.exit( 0 )
+      }
+    }, 100 )
+
+    if ( hasErrors ) {
+      clearConsole()
+    }
 
     process.stdout.write( output )
   }
