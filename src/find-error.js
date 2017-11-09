@@ -63,6 +63,21 @@ function parsePosition ( pos ) {
   }
 }
 
+/*
+ * Used to attempt to look for target files in relative directories
+ * in case of path pathing issues.
+ */
+function getDirectories ( callback ) {
+  if ( process && process.version && fs ) {
+    return (
+      fs.readdirSync( process.cwd() )
+      .filter( function ( path ) {
+        return fs.lstatSync( path ).isDirectory()
+      } )
+    )
+  }
+}
+
 function findError ( text ) {
   // console.log( ' == RAW ==' )
   // console.log( text )
@@ -78,13 +93,7 @@ function findError ( text ) {
   var _lines = text.split( '\n' )
 
   debug( ' === cwd directories === ' )
-  var cwdDirs = []
-  if ( process && process.version && fs ) {
-    cwdDirs = fs.readdirSync( process.cwd() )
-      .filter( function ( path ) {
-        return fs.lstatSync( path ).isDirectory()
-      } )
-  }
+  var cwdDirs = getDirectories()
   debug( cwdDirs )
   debug( ' === ' )
 
