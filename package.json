@@ -11,6 +11,7 @@
     "dist/bundle.min.js"
   ],
   "scripts": {
+    "prepublish": "npm run build && npm run test:bundle && npm run test",
     "build:source": "browserify --node -s wooster -t [ babelify --presets [ es2015 ] ] src/version2.js -o dist/bundle.js",
     "uglify": "uglifyjs dist/bundle.js -cmo dist/bundle.min.js",
     "build": "npm run build:source && npm run uglify",
