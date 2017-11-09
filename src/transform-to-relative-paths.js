@@ -44,8 +44,8 @@ function transformToRelativePaths ( text, transformPath ) {
 
     debug( 'trans relpath: ' + relativePath )
     text = text
-    .split( url.match )
-    .join( transformPath( ' ' + relativePath ) )
+      .split( url.match )
+      .join( transformPath( ' ' + relativePath ) )
   } )
 
   debug( urls )

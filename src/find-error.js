@@ -1,13 +1,8 @@
 // only works in NodeJS
 // find error sources in text by url and context weight
 
-var fs, path
-try {
-  var _require = require
-  fs = _require( 'fs' )
-  path = _require( 'path' )
-} catch ( err ) {
-}
+var fs = require( 'fs' )
+var path = require( 'path' )
 
 function debug ( msg ) {
   // console.log( msg )
@@ -71,9 +66,9 @@ function getDirectories ( callback ) {
   if ( process && process.version && fs ) {
     return (
       fs.readdirSync( process.cwd() )
-      .filter( function ( path ) {
-        return fs.lstatSync( path ).isDirectory()
-      } )
+        .filter( function ( path ) {
+          return fs.lstatSync( path ).isDirectory()
+        } )
     )
   }
 }
@@ -377,6 +372,12 @@ function findError ( text ) {
     _lines.forEach( function ( line ) {
       if ( line.toLowerCase().indexOf( 'unexpected' ) >= 0 ) _likelyErrorDescription = line
       if ( line.toLowerCase().indexOf( 'failed' ) >= 0 ) _likelyErrorDescription = line
+    } )
+  }
+
+  if ( !_likelyErrorDescription ) {
+    _lines.forEach( function ( line ) {
+      if ( line.toLowerCase().indexOf( 'error' ) >= 0 ) _likelyErrorDescription = line
     } )
   }
 

@@ -5,7 +5,7 @@ var HOME_DIR = false
 var _r = require
 try {
   HOME_DIR = _r( 'os' ).homedir()
-} catch ( err ) { /* ignore*/ }
+} catch ( err ) { /* ignore */ }
 
 // similar ( but not the same ) to vim's :help pathshorten
 // Shorten directory names in the path {expr} and return the
