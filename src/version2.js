@@ -187,11 +187,51 @@ function _parseDescription ( description, opts ) {
   return description
 }
 
+function createMessage ( opts ) {
+  var ctx = opts.ctx
+  var message = opts.message
+  var filepath = opts.filename || ctx.filename
+
+  if ( opts.prettify !== false ) {
+    opts.prettify = true
+  }
+
+  var context = ctx.context
+
+  var description = message || '[ Unknown Error ]'
+
+  description = _parseDescription( description, opts )
+
+  var output = [
+    colorify( '>> wooster output <<', 'blackBright' ),
+    description,
+    '',
+    ' @ ' +
+    transformToRelativePaths( filepath, function ( path ) {
+      return colorify( path, 'magentaBright' )
+    } ) +
+    ' ' + colorify( ctx.lineno, 'redBright' ) +
+    ':' + colorify( ctx.colno, 'redBright' )
+  ].join( '\n' )
+
+  output += '\n' + context + '\n'
+
+  if ( !opts.prettify ) {
+    output = stripAnsi( output )
+  }
+
+  debug( output )
+
+  return output
+}
+
 _api.parse = parse
 
 _api.prettifyText = prettifyText
 _api.parseContext = parseContext
 _api.pathShorten = pathShorten
 _api.colorify = colorify
+
+_api.createMessage = createMessage
 
 module.exports = _api
