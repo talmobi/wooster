@@ -68,13 +68,53 @@ function parseContext ( opts ) {
 
   var lines = text.split( '\n' )
 
-  var i = Math.max( 0, lineno - 6 ) // first line
-  var j = Math.min( lines.length - 1, i + 4 + 2 + 2 ) // last line
+  var firstLineNr = Math.max( 0, lineno - 6 ) // first line
+  var lastLineNr = Math.min( lines.length - 1, firstLineNr + 4 + 2 + 2 ) // last line
 
-  // prettify context lines
+  // in order to align all the numbers back to back
+  // eg:    8 |    vs     8 |
+  //        9 |           9 |
+  //       10 |           10 |
+  var largestNumberPadding = String( lastLineNr ).trim().length
+
+  // remember which lines were snipped
+  // so we can add a little colored <SNIP> tag at the end
+  // ( if we add it now it will be overwritten by prettifyText coloring )
+  var snippedLines = {}
+
+  for ( var i = firstLineNr; i < lastLineNr; i++ ) {
+    var line = lines[ i ]
+    // cap line
+    if ( line.length > 150 ) {
+      lines[ i ] = line.slice( 0, 150 ) // + colorify( ' ..<SNIP>..', 'white' )
+      snippedLines[ i ] = true
+    }
+  }
+
+  /*
+   * trim code block on the left side as much as possible ( keeping relative structure )
+   */
+  var contextLines = []
+  var leftTrim = 99999 // trim amount, set to 0 if nothing to trim
+  var shift
+  for ( var i = firstLineNr; i < lastLineNr; i++ ) {
+    var line = lines[ i ]
+    contextLines.push( line )
+    shift = line.split( /\S+/, 1 )[ 0 ].length
+    if ( line.trim() ) {
+      if ( shift < leftTrim ) {
+        leftTrim = shift
+      }
+    }
+  }
+  if ( leftTrim === 99999 ) leftTrim = 0 // nothing to trim
+
+  /*
+   * prettify context lines
+   */
   if ( opts.prettify ) {
-    var begin = Math.max( 0, i - 3 )
-    var end = Math.min( lines.length, j + 1 )
+    var begin = Math.max( 0, firstLineNr - 3 )
+    var end = Math.min( lines.length, lastLineNr + 1 )
 
     var slice = lines.slice( begin, end )
 
@@ -87,18 +127,26 @@ function parseContext ( opts ) {
     } )
   }
 
-  var minLeftPadding = String( j ).trim().length
+  // fill <SNIP> tags to snipped lines
+  Object.keys( snippedLines ).forEach( function ( key ) {
+    var lineNr = key
+    lines[ lineNr ] += colorify( ' <<SNIP>>', 'white' )
+  } )
 
   var parsedLines = []
-  for ( ; i < j; i++ ) {
+  for ( var i = 0; i < lastLineNr; i++ ) {
     var head = String( i + 1 ).trim() // line number column
     var body = lines[ i ] // line text content
+
+    if ( leftTrim ) {
+      body = body.slice( leftTrim )
+    }
 
     // currently parsing target line
     var onTargetLine = ( i === ( lineno - 1 ) )
 
     // left pad
-    while ( head.length < minLeftPadding ) head = ( ' ' + head )
+    while ( head.length < largestNumberPadding ) head = ( ' ' + head )
 
     // target line
     if ( onTargetLine ) {
@@ -123,15 +171,17 @@ function parseContext ( opts ) {
 
     // separate line number and line content
     var line = ( head + ' | ' + body )
+
+    // complete line
     parsedLines.push( line )
 
     // draw an arrow pointing upward to column location
     if ( onTargetLine ) {
       var offset = '' // ^ pointer offset
-      for ( var x = 0; x < colno; x++ ) {
+      for ( var x = 0; x < ( colno - leftTrim ); x++ ) {
         offset += ' '
       }
-      var _head = String( j ).trim().split( /./ ).join( ' ' ) + '   | '
+      var _head = String( lastLineNr ).trim().split( /./ ).join( ' ' ) + '   | '
 
       if ( opts.prettify ) {
         parsedLines.push( _head + offset + colorify( '^', 'redBright' ) )
