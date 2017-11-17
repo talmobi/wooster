@@ -104,8 +104,14 @@ function parse ( text, opts ) {
 
     description = _parseDescription( description, opts )
 
+    var introMessage = colorify( '>> wooster output <<', 'blackBright' )
+
+    if ( ctx.usedSourceMap ) {
+      introMessage += ( '  ' + colorify( '( SourceMap )', 'bgCyan' ) )
+    }
+
     var output = [
-      colorify( '>> wooster output <<', 'blackBright' ),
+      introMessage,
       description,
       '',
       ' @ ' +
@@ -202,8 +208,14 @@ function createMessage ( opts ) {
 
   description = _parseDescription( description, opts )
 
+  var introMessage = colorify( '>> wooster output <<', 'blackBright' )
+
+  if ( ctx.usedSourceMap ) {
+    introMessage += ( '  ' + colorify( '( SourceMap )', 'bgCyan' ) )
+  }
+
   var output = [
-    colorify( '>> wooster output <<', 'blackBright' ),
+    introMessage,
     description,
     '',
     ' @ ' +
