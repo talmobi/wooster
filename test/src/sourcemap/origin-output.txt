@@ -1,0 +1,13 @@
+>> wooster output <<
+ ReferenceError: Can't find variable: redom
+
+ @ http://localhost:4040/bundle.js 6:6
+  1 | (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new %SNIP%
+  2 | 'use strict';
+  3 | 
+  4 | // successful build
+  5 | var text = 'giraffe';
+> 6 | redom;
+    |       ^
+  7 | console.log(text);
+  8 | 

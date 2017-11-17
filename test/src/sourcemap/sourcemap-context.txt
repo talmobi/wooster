@@ -1,0 +1,5 @@
+  1 | // successful build
+  2 | var text = 'giraffe'
+> 3 | redom
+    | ^
+  4 | console.log( text )

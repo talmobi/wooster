@@ -1,0 +1,10 @@
+>> wooster output <<  ( SourceMap )
+ ReferenceError: Can't find variable: redom
+
+ @  test/stage/app.js 3:0
+  1 | // successful build
+  2 | var text = 'giraffe'
+> 3 | redom
+    | ^
+  4 | console.log( text )
+
