@@ -69,11 +69,11 @@ test( 'successful browserify build', function ( t ) {
             console.log( buffer )
             t.equal( buffer.trim(), 'giraffe', 'expected output' )
 
-            // t.equal(
-            //   tools.clean( targetPath ),
-            //   'is clean',
-            //   'targetPath is clean after the test'
-            // )
+            t.equal(
+              tools.clean( targetPath ),
+              'is clean',
+              'targetPath is clean after the test'
+            )
 
             t.end()
           }
