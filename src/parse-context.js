@@ -113,6 +113,13 @@ function parseContext ( opts ) {
   }
   if ( leftTrim === 99999 ) leftTrim = 0 // nothing to trim
 
+  if ( leftTrim > 0 ) {
+    for ( var i = firstLineNr; i < lastLineNr; i++ ) {
+      var line = lines[ i ]
+      lines[ i ] = line.slice( leftTrim )
+    }
+  }
+
   /*
    * prettify context lines
    */
@@ -141,10 +148,6 @@ function parseContext ( opts ) {
   for ( var i = 0; i < lastLineNr; i++ ) {
     var head = String( i + 1 ).trim() // line number column
     var body = lines[ i ] // line text content
-
-    if ( leftTrim ) {
-      body = body.slice( leftTrim )
-    }
 
     // currently parsing target line
     var onTargetLine = ( i === ( lineno - 1 ) )
