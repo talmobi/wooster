@@ -14,9 +14,9 @@ function parseContext ( opts ) {
 
   var text = opts.text
 
-  var lineno = opts.lineno || opts.line || opts.lin
-  var colno = opts.colno || opts.column || opts.col
-  var filename = ( opts.url || opts.path || opts.filename || opts.filepath || opts.file || opts.uri || '[unknown source]' )
+  var lineno = opts.lineno || opts.line || opts.lin || opts.linenr
+  var colno = opts.colno || opts.column || opts.col || opts.colnr
+  var filename = ( opts.uri || opts.url || opts.path || opts.filename || opts.filepath || opts.file || '[unknown source]' )
 
   var rawSourceMap
   var sourceMapConsumer
@@ -24,25 +24,29 @@ function parseContext ( opts ) {
   var sourceOrigin
   var usedSourceMap = false
 
-  try {
-    rawSourceMap = convert.fromSource( text )
+  var disableSourceMaps = ( opts.disableSourceMaps || opts.disableSourceMap )
 
-    if ( rawSourceMap ) rawSourceMap = rawSourceMap.toJSON()
+  if ( !disableSourceMaps ) {
+    try {
+      rawSourceMap = convert.fromSource( text )
 
-    if ( rawSourceMap ) {
-      sourceMapConsumer = new sourceMap.SourceMapConsumer( rawSourceMap )
-      sourceOrigin = sourceMapConsumer.originalPositionFor( {
-        line: lineno,
-        column: colno
-      } )
-      sourceText = sourceMapConsumer.sourceContentFor(
-        sourceOrigin.source
-      )
+      if ( rawSourceMap ) rawSourceMap = rawSourceMap.toJSON()
+
+      if ( rawSourceMap ) {
+        sourceMapConsumer = new sourceMap.SourceMapConsumer( rawSourceMap )
+        sourceOrigin = sourceMapConsumer.originalPositionFor( {
+          line: lineno,
+          column: colno
+        } )
+        sourceText = sourceMapConsumer.sourceContentFor(
+          sourceOrigin.source
+        )
+      }
+    } catch ( err ) {
+      // ignore, didn't find source map support
+      debug( 'warning: searching for a source map threw an error' )
+      debug( err )
     }
-  } catch ( err ) {
-    // ignore, didn't find source map support
-    debug( 'warning: searching for a source map threw an error' )
-    debug( err )
   }
 
   if ( rawSourceMap ) {
@@ -52,7 +56,7 @@ function parseContext ( opts ) {
   }
 
   if (
-    opts.enableSourceMaps === true &&
+    !disableSourceMaps &&
     sourceText &&
     sourceOrigin
     // sourceOrigin.line >= 0 &&
