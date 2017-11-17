@@ -138,10 +138,10 @@ function parseContext ( opts ) {
     } )
   }
 
-  // fill <SNIP> tags to snipped lines
+  // fill %SNIP% tags to snipped lines
   Object.keys( snippedLines ).forEach( function ( key ) {
     var lineNr = key
-    lines[ lineNr ] += colorify( ' <<SNIP>>', 'white' )
+    lines[ lineNr ] += colorify( ' %SNIP%', 'white' )
   } )
 
   var parsedLines = []
