@@ -106,8 +106,20 @@ function parse ( text, opts ) {
 
     var introMessage = colorify( '>> wooster output <<', 'blackBright' )
 
+    if ( opts.intro ) {
+      introMessage = opts.intro
+    }
+
     if ( ctx.usedSourceMap ) {
       introMessage += ( '  ' + colorify( '( SourceMap )', 'bgCyan' ) )
+    }
+
+    if ( opts.preintro ) {
+      introMessage = ( opts.preintro + introMessage )
+    }
+
+    if ( opts.postintro ) {
+      introMessage = ( introMessage + opts.postintro )
     }
 
     var output = [
@@ -210,8 +222,20 @@ function createMessage ( opts ) {
 
   var introMessage = colorify( '>> wooster output <<', 'blackBright' )
 
+  if ( opts.intro ) {
+    introMessage = opts.intro
+  }
+
   if ( ctx.usedSourceMap ) {
     introMessage += ( '  ' + colorify( '( SourceMap )', 'bgCyan' ) )
+  }
+
+  if ( opts.preintro ) {
+    introMessage = ( opts.preintro + introMessage )
+  }
+
+  if ( opts.postintro ) {
+    introMessage = ( introMessage + opts.postintro )
   }
 
   var output = [
