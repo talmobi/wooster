@@ -86,6 +86,7 @@ function parseContext ( opts ) {
   // ( if we add it now it will be overwritten by prettifyText coloring )
   var snippedLines = {}
 
+  // TODO unsure if this is necessary? may mess up edge cases where errors occur on long long lines?
   for ( var i = firstLineNr; i < lastLineNr; i++ ) {
     var line = lines[ i ]
     // cap line
@@ -98,12 +99,12 @@ function parseContext ( opts ) {
   /*
    * trim code block on the left side as much as possible ( keeping relative structure )
    */
-  var contextLines = []
+  // var contextLines = []
   var leftTrim = 99999 // trim amount, set to 0 if nothing to trim
   var shift
   for ( var i = firstLineNr; i < lastLineNr; i++ ) {
     var line = lines[ i ]
-    contextLines.push( line )
+    // contextLines.push( line )
     shift = line.split( /\S+/, 1 )[ 0 ].length
     if ( line.trim() ) {
       if ( shift < leftTrim ) {
@@ -145,7 +146,7 @@ function parseContext ( opts ) {
   } )
 
   var parsedLines = []
-  for ( var i = 0; i < lastLineNr; i++ ) {
+  for ( var i = firstLineNr; i < lastLineNr; i++ ) {
     var head = String( i + 1 ).trim() // line number column
     var body = lines[ i ] // line text content
 
