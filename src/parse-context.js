@@ -145,6 +145,11 @@ function parseContext ( opts ) {
     lines[ lineNr ] += colorify( ' %SNIP%', 'white' )
   } )
 
+  if ( Number( lineno ) === lines.length ) {
+    // a rare little problem -- off by one error in error logs basically
+    lastLineNr++
+  }
+
   var parsedLines = []
   for ( var i = firstLineNr; i < lastLineNr; i++ ) {
     var head = String( i + 1 ).trim() // line number column
