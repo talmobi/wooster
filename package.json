@@ -11,7 +11,7 @@
     "dist/bundle.min.js"
   ],
   "scripts": {
-    "prepublish": "npm run build && npm run test:bundle && npm run test",
+    "prepublish": "npm run build && npm run test:bundle && npm run test && npm run pass",
     "build:source": "browserify --node -s wooster -t [ babelify --presets [ es2015 ] ] src/version2.js -o dist/bundle.js",
     "uglify": "uglifyjs dist/bundle.js -cmo dist/bundle.min.js",
     "build": "npm run build:source && npm run uglify",
@@ -19,6 +19,7 @@
     "lint": "spacestandard --fix src/**/*.js",
     "test:bundle": "cd test && TEST_SOURCE='../dist/bundle.min.js' tape test-*.js | faucet",
     "test": "cd test && tape test-*.js | faucet",
+    "pass": "passlint dist/*.js",
     "coverage": "nyc npm test"
   },
   "keywords": [
@@ -50,6 +51,7 @@
     "node-sass": "~4.5.3",
     "npm-which": "~3.0.1",
     "nyc": "^11.2.1",
+    "passlint": "0.0.13",
     "rollup": "~0.41.6",
     "spacestandard": "0.0.6",
     "stylus": "~0.54.5",
