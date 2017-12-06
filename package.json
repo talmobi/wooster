@@ -1,6 +1,6 @@
 {
   "name": "wooster",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "simple JavaScript error detection/parser/simplifier/highlighter",
   "main": "dist/bundle.min.js",
   "bin": {
