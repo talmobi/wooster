@@ -33,11 +33,11 @@ function getUrlMatchWeight ( line, match ) {
     var t = a
     a = b
     b = t
-    weight -= 10
+    weight -= 5
   }
 
-  if ( a.indexOf( b ) !== -1 ) weight += 35
-  if ( a.toLowerCase().indexOf( b.toLowerCase() ) !== -1 ) weight += 100
+  if ( a.indexOf( b ) >= 0 ) weight += 3
+  if ( a.toLowerCase().indexOf( b.toLowerCase() ) >= 0 ) weight += 6
 
   return weight
 }
@@ -106,24 +106,41 @@ function findError ( text ) {
     var line = _lines[ lineNumber ]
     seekBuffer = text.substring( indexOf + match[ 0 ].length )
 
-    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 1.5
-    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 0.1
-    if ( line.toLowerCase().indexOf( 'Npm' ) !== -1 ) weight -= 0.25
-    if ( line.toLowerCase().indexOf( 'NPM' ) !== -1 ) weight -= 0.75
+    var errIndex = line.toLowerCase().indexOf( 'error' )
+    var slashIndex = line.toLowerCase().lastIndexOf( '/' )
+
+    if ( errIndex > slashIndex ) weight -= 3
+
+    // avoid parsing lines with node_modules in them (most likely stack traces..)
+    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 6
+    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 3
+
+    // hidden files
+    if ( line.toLowerCase().indexOf( '/.' ) !== -1 ) weight -= 1
+    if ( line.toLowerCase().indexOf( '\\.' ) !== -1 ) weight -= 1
+
+    // relative hidden files
+    if ( line.toLowerCase().indexOf( '../.' ) !== -1 ) weight -= 2
+    if ( line.toLowerCase().indexOf( '..\\.' ) !== -1 ) weight -= 2
+
+    // relative hidden files
+    if ( line.toLowerCase().indexOf( '../../.' ) !== -1 ) weight -= 3
+    if ( line.toLowerCase().indexOf( '..\\..\\.' ) !== -1 ) weight -= 3
 
     if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 1
-    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 0.49
-    if ( line.indexOf( 'Error' ) !== -1 ) weight += 0.50
+
+    if ( line.indexOf( 'Error' ) !== -1 ) weight += 2
 
     // if current line has position information increase weight
     if ( rePosition.test( line.toLowerCase() ) ) {
-      weight += 0.50
+      weight += 1
     }
 
     // if prev line contains 'error' increase weight a little bit
     var prevLine = _lines[ lineNumber - 1 ]
     if ( typeof prevLine === 'string' ) {
-      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 0.50
+      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 1
+      if ( prevLine.indexOf( 'Error' ) !== -1 ) weight += 2
 
       if ( rePosition.test( prevLine.toLowerCase() ) ) {
         weight += 0.05
@@ -213,10 +230,10 @@ function findError ( text ) {
     return false
   }
 
-  if ( bestUrl.weight <= 0 ) {
-    debug( ' >>>>> url match weight at or below 0 -- consider as no error found' )
-    return false
-  }
+  // if ( bestUrl.weight <= 0 ) {
+  //   debug( ' >>>>> url match weight at or below 0 -- consider as no error found' )
+  //   return false
+  // }
 
   debug( '   > most likely source URL: ' + bestUrl.match )
 
@@ -242,18 +259,35 @@ function findError ( text ) {
     debug( ' position word boundary: ' + word + ', match: ' + match[ 0 ] )
     // if matched word boundary contains '/' (path seperators) decrease weight
     // this avoids parsing path names as error positions (in case a path name happens to match)
-    if ( word && word.indexOf( '/' ) !== -1 ) weight -= 100
+    if ( word && word.indexOf( '/' ) !== -1 ) weight -= 30
     if ( match[ 0 ].indexOf( '{' ) !== -1 ) weight -= 5
     if ( match[ 0 ].indexOf( '}' ) !== -1 ) weight -= 5
 
+    var errIndex = line.toLowerCase().indexOf( 'error' )
+    var slashIndex = line.toLowerCase().lastIndexOf( '/' )
+
+    if ( errIndex > slashIndex ) weight -= 10
+
     // avoid parsing lines with node_modules in them (most likely stack traces..)
-    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 100
-    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 50
+    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 6
+    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 3
+
+    // hidden files
+    if ( line.toLowerCase().indexOf( '/.' ) !== -1 ) weight -= 1
+    if ( line.toLowerCase().indexOf( '\\.' ) !== -1 ) weight -= 1
+
+    // relative hidden files
+    if ( line.toLowerCase().indexOf( '../.' ) !== -1 ) weight -= 2
+    if ( line.toLowerCase().indexOf( '..\\.' ) !== -1 ) weight -= 2
+
+    // relative hidden files
+    if ( line.toLowerCase().indexOf( '../../.' ) !== -1 ) weight -= 3
+    if ( line.toLowerCase().indexOf( '..\\..\\.' ) !== -1 ) weight -= 3
 
     // if current line contains 'error' increase weight
-    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 100
-    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 100
-    if ( line.indexOf( 'Error' ) !== -1 ) weight += 10
+    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 5
+    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 1
+    if ( line.indexOf( 'Error' ) !== -1 ) weight += 2
 
     if ( line.toLowerCase().indexOf( 'expected' ) !== -1 ) weight += 1
     if ( line.toLowerCase().indexOf( 'unexpected' ) !== -1 ) weight += 3
@@ -266,13 +300,13 @@ function findError ( text ) {
     // if prev line contains 'error' increase weight a little bit
     var prevLine = _lines[ lineNumber - 1 ]
     if ( typeof prevLine === 'string' ) {
-      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 50
+      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 4
     }
 
     // if next line contains 'error' increase weight a tiny bit
     var nextLine = _lines[ lineNumber + 1 ]
     if ( typeof nextLine === 'string' ) {
-      if ( nextLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 25
+      if ( nextLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 2
     }
 
     // if ( line.indexOf( bestUrl.match ) !== -1 ) weight += 10
@@ -285,7 +319,7 @@ function findError ( text ) {
       var p = parsePosition( match[ 0 ] )
 
       if ( p.lineno <= 0 ) {
-        weight -= 3
+        weight -= 100
       }
 
       if ( p.lineno <= 1 ) {
@@ -300,6 +334,8 @@ function findError ( text ) {
         weight -= Math.floor( p.colno / 200 )
       }
     }
+
+    debug( 'weight: ' + weight )
 
     matches.push( {
       line: line,
@@ -365,21 +401,21 @@ function findError ( text ) {
     return b.weight - a.weight
   } )
 
-  if ( r[ 0 ].weight <= 0 ) {
-    debug( ' >>>>> pos match weight at or below 0 -- consider as no error found' )
-    return false
-  }
+  // if ( r[ 0 ].weight <= 0 ) {
+  //   debug( ' >>>>> pos match weight at or below 0 -- consider as no error found' )
+  //   return false
+  // }
 
   var bestMatch = r[ 0 ].match
-
-  // console.log( ' == bestMatch == ' )
-  // console.log( bestMatch )
-  // console.log( r[ 0 ].weight )
 
   if ( !bestMatch ) {
     debug( ' >>>>> bestMatch was falsy -- consider as no error found' )
     return false
   }
+
+  debug( ' == bestMatch == ' )
+  debug( bestMatch )
+  debug( 'weight: ' + r[ 0 ].weight )
 
   debug( 'pos bestMatch: ' + bestMatch )
 
