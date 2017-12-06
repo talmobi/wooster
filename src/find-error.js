@@ -281,6 +281,26 @@ function findError ( text ) {
     debug( ' position found: ' + match[ 0 ] + ', weight: ' + weight )
     debug( '  line: ' + line )
 
+    if ( match[ 0 ] ) {
+      var p = parsePosition( match[ 0 ] )
+
+      if ( p.lineno <= 0 ) {
+        weight -= 3
+      }
+
+      if ( p.lineno <= 1 ) {
+        weight -= 2
+      }
+
+      if ( p.lineno <= 9 ) {
+        weight -= 1
+      }
+
+      if ( p.colno >= 200 ) {
+        weight -= Math.floor( p.colno / 200 )
+      }
+    }
+
     matches.push( {
       line: line,
       weight: weight,
