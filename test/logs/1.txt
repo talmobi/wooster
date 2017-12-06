@@ -1,0 +1,21 @@
+[TAILING] Tailing last 15 lines for [all] processes (change the value with --lines option)
+/Users/mollie/.pm2/logs/pm2-logrotate-error-4.log last 15 lines:
+/Users/mollie/.pm2/logs/sps-error-18.log last 15 lines:
+/Users/mollie/.pm2/logs/sps-error-19.log last 15 lines:
+/Users/mollie/.pm2/logs/sps-error-20.log last 15 lines:
+/Users/mollie/.pm2/logs/sps-error-17.log last 15 lines:
+17|sps     |     at emitNone (events.js:91:20)
+17|sps     |     at IncomingMessage.emit (events.js:185:7)
+17|sps     |     at endReadableNT (_stream_readable.js:974:12)
+17|sps     |     at _combinedTickCallback (internal/process/next_tick.js:80:11)
+17|sps     |     at process._tickDomainCallback (internal/process/next_tick.js:128:9)
+17|sps     | TypeError: Cannot read property 'OFFLINE' ofundefined
+17|sps     |     at ../src/symphony-users-injector.js:179:64
+17|sps     |     at ../src/symphony-agent.js:109:11
+17|sps     |     at ../src/node_modules/dasu/dist/bundle.min.js:1:1137
+17|sps     |     at IncomingMessage.<anonymous> (../src/node_modules/dasu/dist/bundle.min.js:1:2468)
+17|sps     |     at emitNone (events.js:91:20)
+17|sps     |     at IncomingMessage.emit (events.js:185:7)
+17|sps     |     at endReadableNT (_stream_readable.js:974:12)
+17|sps     |     at _combinedTickCallback (internal/process/next_tick.js:80:11)
+17|sps     |     at process._tickDomainCallback (internal/process/next_tick.js:128:9)
