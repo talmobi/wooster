@@ -53,7 +53,7 @@ and then giving that error some context and giving it some makeup.
 If no error is detected or parsing fails the input will be returned as output without changes.
 
 # Alternatives
-Let me know.
+[pretty-error](https://github.com/AriaMinaei/pretty-error)
 
 # Test
 
