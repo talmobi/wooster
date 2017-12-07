@@ -28,6 +28,10 @@ function getUrlMatchWeight ( line, match ) {
   line = grabAlphabet( line )
   match = grabAlphabet( match )
 
+  // console.log( ' === GIRAFFE === ' )
+  // console.log( line )
+  // console.log( match )
+
   var a = line
   var b = match
 
@@ -35,7 +39,7 @@ function getUrlMatchWeight ( line, match ) {
     var t = a
     a = b
     b = t
-    weight -= 5
+    weight -= 4
   }
 
   if ( a.indexOf( b ) >= 0 ) weight += 3
@@ -111,17 +115,17 @@ function findError ( text ) {
     var errIndex = line.toLowerCase().indexOf( 'error' )
     var slashIndex = line.toLowerCase().lastIndexOf( '/' )
 
-    if ( errIndex > slashIndex ) weight -= 2
+    if ( errIndex > slashIndex ) weight -= 20
 
-    if ( line.trim().indexOf( ':' ) > 0 ) weight += 0.1
+    if ( line.trim().indexOf( ':' ) > 0 ) weight += 1
 
-    if ( line.toLowerCase().indexOf( '[built]' ) >= 0 ) weight -= 20
+    if ( line.toLowerCase().indexOf( '[built]' ) >= 0 ) weight -= 200
 
-    if ( line.toLowerCase().indexOf( '[emitted]' ) >= 0 ) weight -= 3
+    if ( line.toLowerCase().indexOf( '[emitted]' ) >= 0 ) weight -= 30
 
     // avoid parsing lines with node_modules in them (most likely stack traces..)
-    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 6
-    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 3
+    if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 60
+    if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 30
 
     // hidden files
     if ( line.toLowerCase().indexOf( '/.' ) !== -1 ) weight -= 1
@@ -135,34 +139,33 @@ function findError ( text ) {
     if ( line.toLowerCase().indexOf( '../../.' ) !== -1 ) weight -= 1
     if ( line.toLowerCase().indexOf( '..\\..\\.' ) !== -1 ) weight -= 1
 
-    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 2
-    if ( line.indexOf( 'Error' ) !== -1 ) weight += 1
+    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 20
+    if ( line.indexOf( 'Error' ) !== -1 ) weight += 10
+    if ( line.indexOf( 'ERROR' ) !== -1 ) weight += 20
 
-    if ( line.indexOf( 'ERROR' ) !== -1 ) weight += 2
-
-    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 1
+    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 10
 
     // if current line has position information increase weight
     if ( rePosition.test( line.toLowerCase() ) ) {
-      weight += 1
+      weight += 10
     }
 
     // if prev line contains 'error' increase weight a little bit
     var prevLine = _lines[ lineNumber - 1 ]
     if ( typeof prevLine === 'string' ) {
-      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 1
-      if ( prevLine.indexOf( 'Error' ) >= 0 ) weight += 1
+      if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 10
+      if ( prevLine.indexOf( 'Error' ) >= 0 ) weight += 10
 
       if ( rePosition.test( prevLine.toLowerCase() ) ) {
-        weight += 0.05
+        weight += 1
       }
     }
 
     // if next line contains 'error' increase weight a tiny bit
     var nextLine = _lines[ lineNumber + 1 ]
     if ( typeof nextLine === 'string' ) {
-      if ( nextLine.toLowerCase().indexOf( 'error' ) >= 0 ) weight += 0.5
-      if ( nextLine.indexOf( 'Error' ) >= 0 ) weight += 0.5
+      if ( nextLine.toLowerCase().indexOf( 'error' ) >= 0 ) weight += 5
+      if ( nextLine.indexOf( 'Error' ) >= 0 ) weight += 5
 
       if ( rePosition.test( nextLine.toLowerCase() ) ) {
         weight += 1
@@ -181,7 +184,7 @@ function findError ( text ) {
 
     // for convenience check up one dir level
     urls.push( {
-      weight: weight - 0.1,
+      weight: weight - 1,
       line: line,
       lineNumber: lineNumber,
       match: '../' + match[ 0 ]
@@ -189,7 +192,7 @@ function findError ( text ) {
 
     // for convenience check up two dir levels
     urls.push( {
-      weight: weight - 0.15,
+      weight: weight - 2,
       line: line,
       lineNumber: lineNumber,
       match: '../../' + match[ 0 ]
@@ -198,7 +201,7 @@ function findError ( text ) {
     // for convenience check down one dir level
     cwdDirs.forEach( function ( dir ) {
       urls.push( {
-        weight: weight - 0.20,
+        weight: weight - 3,
         line: line,
         lineNumber: lineNumber,
         match: dir + '/' + match[ 0 ]
@@ -330,7 +333,7 @@ function findError ( text ) {
     }
 
     // if ( line.indexOf( bestUrl.match ) !== -1 ) weight += 10
-    weight += getUrlMatchWeight( line, bestUrl.match )
+    weight += getUrlMatchWeight( line, bestUrl.line )
 
     debug( ' position found: ' + match[ 0 ] + ', weight: ' + weight )
     debug( '  line: ' + line )
