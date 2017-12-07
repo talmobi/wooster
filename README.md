@@ -1,6 +1,6 @@
 #  wooster - simple log/ouput error detection with context and makeup
 
-![](https://gfycat.com/gifs/detail/ObedientRemarkableArthropods)
+![](https://thumbs.gfycat.com/ObedientRemarkableArthropods-size_restricted.gif)
 
 ## Simple to use
 ```bash
