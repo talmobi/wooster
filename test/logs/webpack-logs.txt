@@ -1,0 +1,41 @@
+> single-spa@3.6.1 build /Users/mollie/work/finning/single-spa
+> ./bin/build-code -p
+
+Hash: 4a9a21b00d0b6bccc90b
+Version: webpack 2.7.0
+Time: 3484ms
+            Asset     Size  Chunks             Chunk Names
+    single-spa.js  48.3 kB       0  [emitted]  main
+single-spa.js.map   325 kB       0  [emitted]  main
+   [2] ./src/child-applications/child-app.helpers.js 2.19 kB {0} [built]
+   [6] ./src/child-applications/child-app-errors.js 1.52 kB {0} [built]
+   [7] ./src/child-applications/timeouts.js 3.83 kB {0} [built]
+  [14] ./src/navigation/reroute.js 9.84 kB {0} [built]
+  [20] ./src/loader.js 589 bytes {0} [built]
+  [21] ./src/navigation/navigation-events.js 5.19 kB {0} [built]
+  [31] ./src/child-applications/child-apps.js 5.04 kB {0} [built]
+  [34] ./src/jquery-support.js 1.55 kB {0} [built]
+  [35] ./src/start.js 816 bytes {0} [built]
+  [36] ./src/utils/find.js 348 bytes {0} [built]
+  [53] ./src/single-spa.js 3.87 kB {0} [built]
+  [55] ./src/child-applications/lifecycles/load.js 254 bytes {0} [built] [failed] [1 error]
+  [56] ./src/child-applications/lifecycles/mount.js 2.37 kB {0} [built]
+  [59] ./~/babel-runtime/helpers/extends.js 544 bytes {0} [built]
+  [99] multi ./src/single-spa.js 28 bytes {0} [built]
+    + 85 hidden modules
+
+ERROR in ./src/child-applications/lifecycles/load.js
+Module build failed: SyntaxError: Unexpected token, expected ; (63:11)
+
+  61 |     }
+  62 | 
+> 63 |     var el _mount.apply( this, arguments )
+     |            ^
+  64 | 
+  65 |     if ( r ) {
+  66 |       window.Reflect = r
+
+ @ ./src/navigation/reroute.js 23:12-64
+ @ ./src/single-spa.js
+ @ multi ./src/single-spa.js
+
