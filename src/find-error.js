@@ -127,9 +127,12 @@ function findError ( text ) {
     if ( line.toLowerCase().indexOf( '../../.' ) !== -1 ) weight -= 3
     if ( line.toLowerCase().indexOf( '..\\..\\.' ) !== -1 ) weight -= 3
 
-    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 1
+    if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 2
+    if ( line.indexOf( 'Error' ) !== -1 ) weight += 1
 
-    if ( line.indexOf( 'Error' ) !== -1 ) weight += 2
+    if ( line.indexOf( 'ERROR' ) !== -1 ) weight += 2
+
+    if ( line.toLowerCase().indexOf( 'fail' ) !== -1 ) weight += 1
 
     // if current line has position information increase weight
     if ( rePosition.test( line.toLowerCase() ) ) {
@@ -140,7 +143,7 @@ function findError ( text ) {
     var prevLine = _lines[ lineNumber - 1 ]
     if ( typeof prevLine === 'string' ) {
       if ( prevLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 1
-      if ( prevLine.indexOf( 'Error' ) !== -1 ) weight += 2
+      if ( prevLine.indexOf( 'Error' ) >= 0 ) weight += 1
 
       if ( rePosition.test( prevLine.toLowerCase() ) ) {
         weight += 0.05
@@ -150,10 +153,11 @@ function findError ( text ) {
     // if next line contains 'error' increase weight a tiny bit
     var nextLine = _lines[ lineNumber + 1 ]
     if ( typeof nextLine === 'string' ) {
-      if ( nextLine.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 0.25
+      if ( nextLine.toLowerCase().indexOf( 'error' ) >= 0 ) weight += 0.5
+      if ( nextLine.indexOf( 'Error' ) >= 0 ) weight += 0.5
 
       if ( rePosition.test( nextLine.toLowerCase() ) ) {
-        weight += 0.35
+        weight += 1
       }
     }
 
@@ -208,14 +212,20 @@ function findError ( text ) {
 
     var exists = false
 
-    try {
-      fs.statSync( resolvedPath )
+    if ( process.env.WOOSTER_IGNORE_NOEXISTS ) {
+      debug( 'ignoring noexists' )
       exists = true
-    } catch ( err ) {
-      /* ignore */
+    } else {
+      debug( 'checking url exists: ' + url.match + ' - ' + exists )
+
+      try {
+        fs.statSync( resolvedPath )
+        exists = true
+      } catch ( err ) {
+        /* ignore */
+      }
     }
 
-    debug( 'checking url exists: ' + url.match + ' - ' + exists )
     if ( exists ) {
       bestResolvedPath = resolvedPath
       bestUrl = url
