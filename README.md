@@ -1,12 +1,18 @@
-#  wooster - simple log/ouput error detection with context and makeup
+#  wooster - error detection, context and makeup 🎀
 
-![](https://thumbs.gfycat.com/ObedientRemarkableArthropods-size_restricted.gif)
+## Before
+![](https://i.imgur.com/E1f9hhn.gif)
+
+## After
+![](https://i.imgur.com/ZQuiNbt.gif)
 
 ## Simple to use
 ```bash
 npm install -g wooster
 npm run build 2>&1 | wooster
 ```
+
+![](https://thumbs.gfycat.com/ObedientRemarkableArthropods-size_restricted.gif)
 
 ```js
 var wooster = require( 'wooster' )
@@ -43,6 +49,8 @@ To easily see the source error and context.
 By scoring each line, each url and each source position ( line and column )
 in a variety of ways to determine if there is an error that could be parsed
 and then giving that error some context and giving it some makeup.
+
+If no error is detected or parsing fails the input will be returned as output without changes.
 
 # Alternatives
 Let me know.
