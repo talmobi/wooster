@@ -111,7 +111,9 @@ function findError ( text ) {
     var errIndex = line.toLowerCase().indexOf( 'error' )
     var slashIndex = line.toLowerCase().lastIndexOf( '/' )
 
-    if ( errIndex > slashIndex ) weight -= 3
+    if ( errIndex > slashIndex ) weight -= 2
+
+    if ( line.trim().indexOf( ':' ) > 0 ) weight += 0.1
 
     if ( line.toLowerCase().indexOf( '[built]' ) >= 0 ) weight -= 20
 
@@ -126,12 +128,12 @@ function findError ( text ) {
     if ( line.toLowerCase().indexOf( '\\.' ) !== -1 ) weight -= 1
 
     // relative hidden files
-    if ( line.toLowerCase().indexOf( '../.' ) !== -1 ) weight -= 2
-    if ( line.toLowerCase().indexOf( '..\\.' ) !== -1 ) weight -= 2
+    if ( line.toLowerCase().indexOf( '../.' ) !== -1 ) weight -= 1
+    if ( line.toLowerCase().indexOf( '..\\.' ) !== -1 ) weight -= 1
 
     // relative hidden files
-    if ( line.toLowerCase().indexOf( '../../.' ) !== -1 ) weight -= 3
-    if ( line.toLowerCase().indexOf( '..\\..\\.' ) !== -1 ) weight -= 3
+    if ( line.toLowerCase().indexOf( '../../.' ) !== -1 ) weight -= 1
+    if ( line.toLowerCase().indexOf( '..\\..\\.' ) !== -1 ) weight -= 1
 
     if ( line.toLowerCase().indexOf( 'error' ) !== -1 ) weight += 2
     if ( line.indexOf( 'Error' ) !== -1 ) weight += 1
