@@ -5,7 +5,9 @@ var fs = require( 'fs' )
 var path = require( 'path' )
 
 function debug ( msg ) {
-  // console.log( msg )
+  if ( process.env.WOOSTER_DEBUG ) {
+    console.log( msg )
+  }
 }
 
 var removeContextFromText = require( './remove-context-from-text.js' )
@@ -110,6 +112,10 @@ function findError ( text ) {
     var slashIndex = line.toLowerCase().lastIndexOf( '/' )
 
     if ( errIndex > slashIndex ) weight -= 3
+
+    if ( line.toLowerCase().indexOf( '[built]' ) >= 0 ) weight -= 20
+
+    if ( line.toLowerCase().indexOf( '[emitted]' ) >= 0 ) weight -= 3
 
     // avoid parsing lines with node_modules in them (most likely stack traces..)
     if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 6
@@ -216,14 +222,14 @@ function findError ( text ) {
       debug( 'ignoring noexists' )
       exists = true
     } else {
-      debug( 'checking url exists: ' + url.match + ' - ' + exists )
-
       try {
         fs.statSync( resolvedPath )
         exists = true
       } catch ( err ) {
         /* ignore */
       }
+
+      debug( 'checking url exists: ' + url.match + ' - ' + exists )
     }
 
     if ( exists ) {
@@ -240,10 +246,12 @@ function findError ( text ) {
     return false
   }
 
-  // if ( bestUrl.weight <= 0 ) {
-  //   debug( ' >>>>> url match weight at or below 0 -- consider as no error found' )
-  //   return false
-  // }
+  if ( bestUrl.weight <= 0 ) {
+    debug( 'bestUrl weight: ' + bestUrl.weight )
+    debug( 'bestUrl line: ' + bestUrl.line )
+    debug( ' >>>>> url match weight at or below 0 -- consider as no error found' )
+    return false
+  }
 
   debug( '   > most likely source URL: ' + bestUrl.match )
 
