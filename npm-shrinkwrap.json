@@ -1,6 +1,6 @@
 {
   "name": "wooster",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "dependencies": {
     "ansi-regex": {
       "version": "2.1.1",
