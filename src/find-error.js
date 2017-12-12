@@ -123,6 +123,8 @@ function findError ( text ) {
 
     if ( line.toLowerCase().indexOf( '[emitted]' ) >= 0 ) weight -= 30
 
+    if ( line.toLowerCase().indexOf( 'csslint:' ) >= 0 ) weight -= 30
+
     // avoid parsing lines with node_modules in them (most likely stack traces..)
     if ( line.toLowerCase().indexOf( 'node_modules' ) !== -1 ) weight -= 60
     if ( line.toLowerCase().indexOf( 'npm' ) !== -1 ) weight -= 30
@@ -320,6 +322,20 @@ function findError ( text ) {
     // decrease weight if match has letters in them
     if ( grabAlphabet( match[ 0 ] ).length > 1 ) weight -= 10
 
+    var colonMatchIndex = match[ 0 ].indexOf( ':' )
+
+    if ( colonMatchIndex >= 0 && colonMatchIndex < 3 ) {
+      // console.log( ' === GIRAFFE ==== ' + match[ 0 ] )
+      weight -= 1
+    }
+
+    // flatten if the match has line and col in it ( column )
+    if ( line.indexOf( 'lin' ) > 0 ) {
+      if ( match[ 0 ].indexOf( 'col' ) > 0 ) {
+        weight += 11
+      }
+    }
+
     // if prev line contains 'error' increase weight a little bit
     var prevLine = _lines[ lineNumber - 1 ]
     if ( typeof prevLine === 'string' ) {
@@ -451,6 +467,7 @@ function findError ( text ) {
     _lines.forEach( function ( line ) {
       if ( line.toLowerCase().indexOf( 'unexpected' ) >= 0 ) _likelyErrorDescription = line
       if ( line.toLowerCase().indexOf( 'failed' ) >= 0 ) _likelyErrorDescription = line
+      if ( line.indexOf( 'Expected' ) >= 0 ) _likelyErrorDescription = line
     } )
   }
 
