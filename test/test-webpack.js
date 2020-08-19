@@ -114,11 +114,11 @@ test( 'error webpack build', function ( t ) {
         var expectedOutput = [
           '',
           '>> wooster output <<',
-          'Module parse failed: ./src/main-error.js Unexpected token (1:20)',
+          'Module parse failed: Unexpected token (1:20)',
           '',
           '@ ./src/main-error.js 1:20',
           '> 1 | var text = \'giraffe\':',
-          '|                     ^',
+          '|                        ^',
           '2 | console.log(text)'
         ].join('\n')
 
