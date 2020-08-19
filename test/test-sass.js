@@ -116,13 +116,15 @@ test( 'error sass build', function ( t ) {
       wooster( data, function ( text ) {
         var expectedOutput = [
           '>> wooster output <<',
-          '"formatted": "Error: Invalid CSS after \\"...ground: salmon%\\": expected expression (e.g. 1px, bold), was \\"}\\"\\n on line 2 of ./src/style-error.scss\\n>> background: salmon%\\n ---------------------^\\n"',
+  '"formatted": "Error: Invalid CSS after \\"...ground: salmon%\\": expected expression',
+          '  (e.g. 1px, bold), was \\"}\\"\\n on line 2 of  ./src/style-error.scss\\n>> background: salmon%\\n\\n',
+          '  ---------------------^\\n"',
           '',
-          '@ ./src/style-error.scss 2:22',
-          '1 | html, body {',
+          '@  ./src/style-error.scss 2:22',
+          '  1 | html, body {',
           '> 2 |   background: salmon%',
-          '|                       ^',
-          '3 | }'
+          '    |                       ^',
+          '  3 | }'
         ].join('\n')
 
         t.equal(
