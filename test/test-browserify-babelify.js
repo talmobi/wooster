@@ -148,7 +148,7 @@ test( 'error browserify ( babelify ) build', function ( t ) {
 function build ( sourcePath, targetPath, callback ) {
   tools.exec(
     browserifyBinPath,
-    '-t [ babelify --presets [ es2015 ] ] $sp -o $tp'
+    '-t [ babelify --presets [ @babel/preset-env ] ] $sp -o $tp'
     .replace( '$sp', sourcePath )
     .replace( '$tp', targetPath )
     .split( ' ' )
