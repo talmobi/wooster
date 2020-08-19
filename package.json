@@ -36,7 +36,7 @@
     "email": "talmo.christian@gmail.com"
   },
   "dependencies": {
-    "cli-color": "~1.2.0",
+    "cli-color": "~2.0.0",
     "convert-source-map": "~1.7.0",
     "minimist": "~1.2.5",
     "source-map": "~0.5.7"
