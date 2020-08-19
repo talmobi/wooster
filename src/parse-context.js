@@ -4,8 +4,21 @@ var colorify = require( './colorify.js' )
 var convert = require( 'convert-source-map' )
 var sourceMap = require( 'source-map' )
 
+const _envs = {}
+Object.keys( process.env ).forEach(
+  function ( key ) {
+    const n = process.env[ key ]
+    if ( n == '0' || n == 'false' || !n ) {
+      return _envs[ key ] = false
+    }
+    _envs[ key ] = n
+  }
+)
+
 function debug ( msg ) {
-  // console.log( msg )
+  if ( _envs[ debug_wooster ] ) {
+    console.log( msg )
+  }
 }
 
 function parseContext ( opts ) {
