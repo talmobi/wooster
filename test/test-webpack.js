@@ -145,7 +145,7 @@ function build ( sourcePath, targetPath, callback ) {
     webpackBinPath,
     [
       sourcePath,
-      targetPath
+      '--output ' + targetPath
     ],
     callback
   )
