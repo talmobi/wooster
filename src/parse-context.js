@@ -16,7 +16,7 @@ Object.keys( process.env ).forEach(
 )
 
 function debug ( msg ) {
-  if ( _envs[ 'debug_wooster' ] ) {
+  if ( _envs.debug_wooster ) {
     console.log( msg )
   }
 }

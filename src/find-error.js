@@ -12,6 +12,7 @@ function debug ( msg ) {
 
 var removeContextFromText = require( './remove-context-from-text.js' )
 
+// eslint-disable-next-line
 var ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
 function stripAnsi ( text ) {
   // https://github.com/chalk/ansi-regex
@@ -105,7 +106,7 @@ function findError ( text ) {
   var rePath = /[\S]*\.[a-zA-Z]+/g
   var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,20}\s{0,5}?\d+\s{0,5}[)]?/g
 
-  while ( match = rePath.exec( text ) ) {
+  while ( match = rePath.exec( text ) ) { // eslint-disable-line
     var weight = 0
     var indexOf = ( text.length - seekBuffer.length ) + seekBuffer.indexOf( match[ 0 ] )
     var lineNumber = ( text.substring( 0, indexOf ).split( '\n' ).length - 1 )
@@ -264,10 +265,10 @@ function findError ( text ) {
 
   debug( ' === positions === ' )
   var matches = []
-  var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,20}\s{0,5}?\d+\s{0,5}[)]?/g
+  var rePosition = /[(]?\s{0,5}\d+\s{0,5}?\D{1,20}\s{0,5}?\d+\s{0,5}[)]?/g // eslint-disable-line
   // match = rePosition.exec(text)
   seekBuffer = text
-  while ( match = rePosition.exec( text ) ) {
+  while ( match = rePosition.exec( text ) ) { // eslint-disable-line
     var weight = 0
 
     var indexOf = ( text.length - seekBuffer.length ) + seekBuffer.indexOf( match[ 0 ] )
