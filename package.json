@@ -11,16 +11,16 @@
     "dist/bundle.min.js"
   ],
   "scripts": {
-    "prepublishOnly": "npm run pass:source && npm run build && npm run test:bundle && npm run test && npm run pass:dist",
+    "prepublishOnly": "npm run passlint:source && npm run build && npm run test:bundle && npm run test && npm run passlint:dist",
     "build:source": "browserify --node -s wooster -t [ babelify --presets [ @babel/preset-env ] ] src/version2.js -o dist/bundle.js",
     "uglify": "uglifyjs dist/bundle.js -cmo dist/bundle.min.js",
-    "build": "npm run pass:source && npm run build:source && npm run uglify",
+    "build": "npm run passlint:source && npm run build:source && npm run uglify",
     "wbuild": "(npm run build:source && npm run uglify) 2>&1 | wooster",
     "lint": "spacestandard --fix src/**/*.js",
-    "test": "cd test && TEST_SOURCE='../dist/bundle.min.js' tape test-*.js | faucet",
-    "test:source": "cd test && tape test-*.js | faucet",
-    "pass:dist": "passlint dist/*.js",
-    "pass:source": "passlint src/*.js",
+    "test": "cd test && TEST_SOURCE='../dist/bundle.min.js' tape 'test-*.js' | faucet",
+    "test:source": "cd test && tape 'test-*.js' | faucet",
+    "passlint:dist": "passlint 'dist/*.js'",
+    "passlint:source": "passlint 'src/*.js'",
     "coverage": "nyc npm test"
   },
   "keywords": [
@@ -52,7 +52,7 @@
     "node-sass": "~4.14.1",
     "npm-which": "~3.0.1",
     "nyc": "~15.1.0",
-    "passlint": "~0.4.0",
+    "passlint": "~0.5.0",
     "rollup": "~2.26.4",
     "spacestandard": "~0.3.0",
     "stylus": "~0.54.8",
