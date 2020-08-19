@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "prepublishOnly": "npm run build && npm run test:bundle && npm run test && npm run pass",
-    "build:source": "browserify --node -s wooster -t [ babelify --presets [ es2015 ] ] src/version2.js -o dist/bundle.js",
+    "build:source": "browserify --node -s wooster -t [ babelify --presets [ @babel/preset-env ] ] src/version2.js -o dist/bundle.js",
     "uglify": "uglifyjs dist/bundle.js -cmo dist/bundle.min.js",
     "build": "npm run build:source && npm run uglify",
     "wbuild": "(npm run build:source && npm run uglify) 2>&1 | wooster",
