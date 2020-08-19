@@ -118,11 +118,12 @@ test( 'error browserify ( babelify ) build', function ( t ) {
       wooster( data, function ( text ) {
         var expectedOutput = [
           '>> wooster output <<',
-          'SyntaxError: ./src/main-error.js: Unexpected token, expected ; (1:20)',
+          'SyntaxError: ./src/main-error.js: Unexpected',
+          ' token, expected ";" (1:20)',
           '',
           '@ ./src/main-error.js 1:20',
           '> 1 | var text = \'giraffe\':',
-          '|                     ^',
+          '|                         ^',
           '2 | console.log(text)'
         ].join('\n')
 
