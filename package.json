@@ -38,7 +38,7 @@
   "dependencies": {
     "cli-color": "~1.2.0",
     "convert-source-map": "~1.5.1",
-    "minimist": "~1.2.0",
+    "minimist": "~1.2.5",
     "source-map": "~0.5.7"
   },
   "devDependencies": {
@@ -50,12 +50,12 @@
     "less": "~2.7.2",
     "node-sass": "~4.5.3",
     "npm-which": "~3.0.1",
-    "nyc": "^11.2.1",
-    "passlint": "0.0.13",
+    "nyc": "~15.1.0",
+    "passlint": "~0.4.0",
     "rollup": "~0.41.6",
-    "spacestandard": "0.0.6",
-    "stylus": "~0.54.5",
-    "tape": "^4.8.0",
+    "spacestandard": "~0.3.0",
+    "stylus": "~0.54.8",
+    "tape": "~5.0.1",
     "uglify-js": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.8.29.tgz",
     "webpack": "~2.6.1"
   }
