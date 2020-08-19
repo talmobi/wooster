@@ -43,7 +43,7 @@ function parseContext ( opts ) {
     try {
       rawSourceMap = convert.fromSource( text )
 
-      if ( rawSourceMap ) rawSourceMap = rawSourceMap.toJSON()
+      if ( rawSourceMap && rawSourceMap.toJSON ) rawSourceMap = rawSourceMap.toJSON()
 
       if ( rawSourceMap ) {
         sourceMapConsumer = new sourceMap.SourceMapConsumer( rawSourceMap )
