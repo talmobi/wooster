@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "cli-color": "~1.2.0",
-    "convert-source-map": "~1.5.1",
+    "convert-source-map": "~1.7.0",
     "minimist": "~1.2.5",
     "source-map": "~0.5.7"
   },
