@@ -111,9 +111,7 @@ function execWait ( file, cmd, args, callback ) {
 }
 
 function stripAnsi ( str ) {
-  // https://github.com/chalk/ansi-regex
-  var ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]/g
-  return str.replace( ansiRegex, '' )
+  return require( 'cli-color/strip' )( str )
 }
 
 function normalize ( str ) {
