@@ -115,8 +115,7 @@ function stripAnsi ( str ) {
 }
 
 function normalize ( str ) {
-  str = str || ''
-  var s = stripAnsi( str )
+  var s = stripAnsi( str || '' )
   s = s.replace( /\s+/g, '' )
   s = s.toLowerCase()
   return s
