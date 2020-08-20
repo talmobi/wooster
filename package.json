@@ -19,8 +19,8 @@
     "lint": "spacestandard --fix src/**/*.js",
     "test": "cd test && TEST_SOURCE='../dist/bundle.min.js' tape 'test-*.js' | faucet",
     "test:source": "cd test && tape 'test-*.js' | faucet",
-    "passlint:dist": "passlint 'dist/*.js'",
-    "passlint:source": "passlint 'src/*.js'",
+    "passlint:dist": "passlint './dist/*.js'",
+    "passlint:source": "passlint './src/*.js'",
     "coverage": "nyc npm test"
   },
   "keywords": [
