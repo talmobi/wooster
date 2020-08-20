@@ -14,7 +14,7 @@
     "prepublishOnly": "npm run passlint:source && npm run build && npm run test:bundle && npm run test && npm run passlint:dist",
     "build:source": "browserify --node -s wooster -t [ babelify --presets [ @babel/preset-env ] ] src/version2.js -o dist/bundle.js",
     "uglify": "uglifyjs dist/bundle.js -cmo dist/bundle.min.js",
-    "build": "npm run build:source && npm run uglify",
+    "build": "npm run passlint:source && npm run build:source && npm run uglify",
     "wbuild": "(npm run build:source && npm run uglify) 2>&1 | wooster",
     "lint": "spacestandard --fix src/**/*.js",
     "test": "cd test && TEST_SOURCE='../dist/bundle.min.js' tape 'test-*.js' | faucet",
