@@ -1,5 +1,8 @@
 [![npm](https://img.shields.io/npm/v/wooster.svg?maxAge=3600&style=flat-square)](https://www.npmjs.com/package/wooster)
 [![npm](https://img.shields.io/npm/l/wooster.svg?maxAge=3600&style=flat-square)](https://github.com/talmobi/wooster/blob/master/LICENSE)
+![mac](https://github.com/talmobi/wooster/workflows/mac/badge.svg)
+![ubuntu](https://github.com/talmobi/wooster/workflows/ubuntu/badge.svg)
+![windows](https://github.com/talmobi/wooster/workflows/windows/badge.svg)
 
 #  wooster
 error detection, context and makeup 🎀
