@@ -70,13 +70,13 @@ function createIOHandler ( callback ) {
     if ( _done ) return undefined
 
     _buffer += chunk.toString( 'utf8' )
+    callback( _buffer )
 
     if ( _buffer.trim().length > 0 ) {
       clearTimeout( _timeout )
       _timeout = setTimeout( function () {
         _done = true
-        callback( _buffer )
-      }, 1000 )
+      }, 3000 )
     }
   }
 }
