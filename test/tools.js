@@ -25,13 +25,17 @@ function exec ( cmd, args, callback ) {
 
   var handler = createIOHandler( function ( data ) {
     _data = data
+  } )
 
+  var _spawnKillTimeout = setTimeout( function () {
     try {
       spawn.kill()
     } catch ( err ) { /* ignore */ }
-  } )
+  }, 1000 * 6 )
 
   spawn.on( 'exit', function () {
+    clearTimeout( _spawnKillTimeout )
+
     var limit = ( Date.now() + 1000 )
 
     attempt()
