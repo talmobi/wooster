@@ -104,6 +104,10 @@ test( 'error rollup build', function ( t ) {
     sourcePath,
     targetPath,
     function ( data ) {
+      t.comment( '' )
+      t.comment( data )
+      t.comment( '' )
+
       t.notEqual(
         tools.normalize( data ).indexOf( 'error' ),
         -1,
