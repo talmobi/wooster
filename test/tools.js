@@ -115,6 +115,7 @@ function stripAnsi ( str ) {
 }
 
 function normalize ( str ) {
+  str = str || ''
   var s = stripAnsi( str )
   s = s.replace( /\s+/g, '' )
   s = s.toLowerCase()
@@ -134,12 +135,11 @@ function clean ( filepath ) {
   return false
 }
 
-var _counter = 0
-var _size = ( 1 << 16 )
+var _counter = 1
 
 function UID () {
-  var date = Date.now().toString( 16 ).slice( -10 )
-  var rnd = String( Math.floor( Math.random() * _size ) )
+  var date = String( Date.now() ).slice( -10 )
+  var rnd = String( Math.random() ).slice( -10 )
   return ( 'uid' + date + String( _counter++ ) + rnd )
 }
 
