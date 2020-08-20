@@ -120,7 +120,7 @@ function stripAnsi ( str ) {
 
 function normalize ( str ) {
   var s = stripAnsi( str || '' ).trim()
-  s = s.split( /[\r\n]/ ).join( '\n' )
+  s = s.split( '\\r' ).join( '\\n' ) // normalize windows magic
   s = s.replace( /\s+/g, '' )
   s = s.toLowerCase()
   return s
